@@ -1,5 +1,6 @@
 package dev.fluxa.nav
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,7 +22,7 @@ val LocalFluxaNav = staticCompositionLocalOf<FluxaBackStack> {
 
 /**
  * Top-level navigation host. Renders the current route's screen
- * with animated transitions.
+ * with animated transitions and handles system back button.
  */
 @Composable
 fun FluxaRouter(
@@ -41,6 +42,10 @@ fun FluxaRouter(
     }
 
     CompositionLocalProvider(LocalFluxaNav provides backStack) {
+        BackHandler(enabled = backStack.canGoBack) {
+            backStack.pop()
+        }
+
         AnimatedContent(
             targetState = currentRoute,
             transitionSpec = {
@@ -60,7 +65,7 @@ fun FluxaRouter(
 }
 
 /**
- * Navigate from within a composable.
+ * Navigate from within a composable. Returns the current [FluxaBackStack].
  */
 @Composable
 fun rememberFluxaNav(): FluxaBackStack = LocalFluxaNav.current
