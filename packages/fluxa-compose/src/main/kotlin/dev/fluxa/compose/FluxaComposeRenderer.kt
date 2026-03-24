@@ -1,7 +1,10 @@
 package dev.fluxa.compose
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -50,6 +53,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.fluxa.ui.FluxaHandlers
 import dev.fluxa.ui.FluxaSemantics
 import dev.fluxa.runtime.FluxaBreakpoint
 import dev.fluxa.style.FluxaDuration
@@ -93,7 +97,9 @@ fun RenderFluxaNode(
         context = context.copy(activeVariants = context.activeVariants + node.activeVariants),
     )
 
-    val baseModifier = modifier.then(resolved.modifier).thenSemantics(node.semantics)
+    val baseModifier = modifier.then(resolved.modifier)
+        .thenHandlers(node.handlers)
+        .thenSemantics(node.semantics)
 
     when (node.type) {
         "Screen" -> RenderScreen(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
@@ -498,10 +504,14 @@ private fun RenderTextField(
     val placeholder = node.meta["placeholder"].orEmpty()
     val enabled = node.meta["enabled"] != "false"
     var value by remember { mutableStateOf("") }
+    val onValueChange = node.handlers.onValueChange
 
     OutlinedTextField(
         value = value,
-        onValueChange = { value = it },
+        onValueChange = { v ->
+            value = v
+            onValueChange?.invoke(v)
+        },
         modifier = modifier,
         label = node.text?.takeIf { it.isNotBlank() }?.let { { Text(it) } },
         placeholder = placeholder.takeIf { it.isNotBlank() }?.let { { Text(it) } },
@@ -535,7 +545,10 @@ private fun RenderToggle(
         }
         Switch(
             checked = checked,
-            onCheckedChange = { checked = it },
+            onCheckedChange = { v ->
+                checked = v
+                node.handlers.onCheckedChange?.invoke(v)
+            },
             enabled = enabled,
         )
     }
@@ -559,7 +572,10 @@ private fun RenderCheckbox(
     ) {
         Checkbox(
             checked = checked,
-            onCheckedChange = { checked = it },
+            onCheckedChange = { v ->
+                checked = v
+                node.handlers.onCheckedChange?.invoke(v)
+            },
             enabled = enabled,
         )
         node.text?.takeIf { it.isNotBlank() }?.let {
@@ -581,7 +597,7 @@ private fun RenderButton(
     val enabled = node.meta["enabled"] != "false"
 
     Button(
-        onClick = {},
+        onClick = { node.handlers.onClick?.invoke() },
         modifier = modifier,
         enabled = enabled,
         shape = RoundedCornerShape(8.dp),
@@ -690,6 +706,19 @@ private fun RenderLazyRow(
                 inheritedTextStyle = resolved.textStyle ?: inheritedTextStyle,
             )
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+private fun Modifier.thenHandlers(handlers: FluxaHandlers): Modifier {
+    if (handlers.onClick == null && handlers.onLongClick == null) return this
+    return if (handlers.onLongClick != null) {
+        this.combinedClickable(
+            onClick = { handlers.onClick?.invoke() },
+            onLongClick = { handlers.onLongClick?.invoke() },
+        )
+    } else {
+        this.clickable { handlers.onClick?.invoke() }
     }
 }
 

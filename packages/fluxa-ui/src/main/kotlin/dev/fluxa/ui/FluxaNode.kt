@@ -12,6 +12,34 @@ data class FluxaNode(
     val children: List<FluxaNode> = emptyList(),
     val meta: Map<String, String> = emptyMap(),
     val semantics: FluxaSemantics? = null,
+    val handlers: FluxaHandlers = FluxaHandlers(),
+)
+
+/**
+ * Event handlers attached to a node. The renderer invokes these
+ * when the corresponding user interaction occurs.
+ */
+data class FluxaHandlers(
+    val onClick: (() -> Unit)? = null,
+    val onLongClick: (() -> Unit)? = null,
+    val onValueChange: ((String) -> Unit)? = null,
+    val onCheckedChange: ((Boolean) -> Unit)? = null,
+)
+
+fun FluxaNode.onClick(handler: () -> Unit): FluxaNode = copy(
+    handlers = handlers.copy(onClick = handler),
+)
+
+fun FluxaNode.onLongClick(handler: () -> Unit): FluxaNode = copy(
+    handlers = handlers.copy(onLongClick = handler),
+)
+
+fun FluxaNode.onValueChange(handler: (String) -> Unit): FluxaNode = copy(
+    handlers = handlers.copy(onValueChange = handler),
+)
+
+fun FluxaNode.onCheckedChange(handler: (Boolean) -> Unit): FluxaNode = copy(
+    handlers = handlers.copy(onCheckedChange = handler),
 )
 
 data class FluxaSemantics(
