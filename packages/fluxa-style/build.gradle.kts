@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     api(project(":packages:fluxa-runtime"))
+    testImplementation(kotlin("test"))
 }
 
 kotlin {

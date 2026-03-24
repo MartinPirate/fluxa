@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation(project(":packages:fluxa-ui"))
     implementation(project(":packages:fluxa-style"))
+    testImplementation(kotlin("test"))
 }
 
 application {
