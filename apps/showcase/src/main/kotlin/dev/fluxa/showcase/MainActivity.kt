@@ -9,17 +9,21 @@ import dev.fluxa.compose.RenderFluxaNode
 import dev.fluxa.runtime.FluxaBreakpoint
 import dev.fluxa.style.FluxaAlignment
 import dev.fluxa.style.FluxaAxisScale
-import dev.fluxa.style.FluxaRadiusScale
 import dev.fluxa.style.FluxaStyles
 import dev.fluxa.style.FluxaThemes
 import dev.fluxa.style.FluxaVariant
 import dev.fluxa.style.style
+import dev.fluxa.ui.HeroPanel
+import dev.fluxa.ui.SectionCard
+import dev.fluxa.ui.SelectableNotice
+import dev.fluxa.ui.SelfAlignedPill
+import dev.fluxa.ui.SpotlightCard
+import dev.fluxa.ui.StatusBadge
 import dev.fluxa.ui.column
 import dev.fluxa.ui.row
 import dev.fluxa.ui.screen
 import dev.fluxa.ui.stack
 import dev.fluxa.ui.text
-import dev.fluxa.ui.withVariants
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,10 +42,10 @@ class MainActivity : ComponentActivity() {
 private val appTheme = FluxaThemes.Aurora
 
 private fun appTree() = screen(
-    column(
-        style = FluxaStyles.heroPanel(appTheme),
-        text("Fluxa"),
-        text("Android UI that feels stricter, faster, and more visual."),
+    HeroPanel(
+        title = "Fluxa",
+        subtitle = "Android UI that feels stricter, faster, and more visual.",
+        theme = appTheme,
     ),
     row(
         style = style {
@@ -66,40 +70,29 @@ private fun appTree() = screen(
         text("Composable bridge"),
         text("This card is rendered from FluxaNode through a Compose adapter."),
     ),
-    column(
-        style = FluxaStyles.adaptiveFeatureCard(appTheme),
-        row(
-            style = style {
-                width("full")
-                justifyContent(FluxaAlignment.SPACE_BETWEEN)
-                alignItems(FluxaAlignment.CENTER)
-            },
-            text("Typed styles"),
-            text(
-                "Live",
-                style = FluxaStyles.statusBadge(appTheme),
-            ),
+    SectionCard(
+        "Typed styles",
+        appTheme,
+        FluxaStyles.adaptiveFeatureCard(appTheme),
+        StatusBadge(
+            label = "Live",
+            theme = appTheme,
         ),
         text("Utilities, tokens, variants, and breakpoints already compile into a runtime style spec."),
     ),
-    stack(
-        style = FluxaStyles.spotlightCard(appTheme),
-        text("Stack primitive"),
-        text(
-            "Self aligned child",
-            style = style {
-                background(appTheme.colors.pill)
-                foreground(appTheme.colors.textPrimary)
-                paddingX(FluxaAxisScale.MD)
-                paddingY(FluxaAxisScale.XS)
-                radius(FluxaRadiusScale.PILL)
-                alignSelf(FluxaAlignment.END)
-            },
+    SpotlightCard(
+        "Stack primitive",
+        appTheme,
+        FluxaStyles.spotlightCard(appTheme),
+        SelfAlignedPill(
+            label = "Self aligned child",
+            theme = appTheme,
         ),
     ),
-    column(
-        style = FluxaStyles.selectedNotice(appTheme),
-        text("Node scoped variants"),
-        text("This block opts into SELECTED on the node itself, not the whole render tree."),
-    ).withVariants(FluxaVariant.SELECTED),
+    SelectableNotice(
+        title = "Node scoped variants",
+        body = "This block opts into SELECTED on the node itself, not the whole render tree.",
+        theme = appTheme,
+        selected = true,
+    ),
 )
