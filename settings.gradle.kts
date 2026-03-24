@@ -17,6 +17,7 @@ dependencyResolutionManagement {
 }
 
 include(
+    ":apps:demo",
     ":apps:showcase",
     ":packages:fluxa-cache",
     ":packages:fluxa-cli",

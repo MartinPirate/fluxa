@@ -18,5 +18,5 @@ android {
 
 dependencies {
     api(project(":packages:fluxa-runtime"))
-    implementation("androidx.work:work-runtime-ktx:2.10.1")
+    api("androidx.work:work-runtime-ktx:2.10.1")
 }
