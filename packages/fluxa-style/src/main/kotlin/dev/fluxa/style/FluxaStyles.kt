@@ -191,4 +191,59 @@ object FluxaStyles {
         background(theme.colors.divider)
         height("1")
     }
+
+    fun secondaryButton(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        background(theme.colors.panel)
+        foreground(theme.colors.textPrimary)
+        paddingX(FluxaAxisScale.XL)
+        paddingY(FluxaAxisScale.MD)
+        radius(FluxaRadiusScale.MD)
+        border(theme.colors.panelBorder, FluxaBorderScale.THIN)
+        typography(theme.typography.label)
+        weight(FluxaWeight.MEDIUM)
+        alignItems(FluxaAlignment.CENTER)
+
+        variant(FluxaVariant.PRESSED) {
+            background(theme.colors.panelAccent)
+        }
+
+        variant(FluxaVariant.DISABLED) {
+            opacity(0.4f)
+        }
+    }
+
+    fun imageCard(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("full")
+        background(theme.colors.panel)
+        radius(FluxaRadiusScale.LG)
+        shadow(FluxaAxisScale.SM)
+    }
+
+    fun avatar(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("40")
+        height("40")
+        background(theme.colors.panelAccent)
+        radius(FluxaRadiusScale.PILL)
+        alignItems(FluxaAlignment.CENTER)
+        justifyContent(FluxaAlignment.CENTER)
+    }
+
+    fun errorCard(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("full")
+        background(theme.colors.error)
+        foreground(theme.colors.errorText)
+        padding(FluxaAxisScale.LG)
+        gap(FluxaAxisScale.SM)
+        radius(FluxaRadiusScale.LG)
+        border(theme.colors.errorText, FluxaBorderScale.THIN)
+    }
+
+    fun successCard(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("full")
+        background(theme.colors.success)
+        foreground(theme.colors.successText)
+        padding(FluxaAxisScale.LG)
+        gap(FluxaAxisScale.SM)
+        radius(FluxaRadiusScale.LG)
+    }
 }
