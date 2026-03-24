@@ -16,8 +16,14 @@ import dev.fluxa.ui.screen
 import dev.fluxa.ui.spacer
 import dev.fluxa.ui.text
 import dev.fluxa.style.FluxaAlignment
+import dev.fluxa.ui.onClick
 
-fun noteDetailScreen(note: Note?, theme: FluxaThemeTokens): FluxaNode {
+fun noteDetailScreen(
+    note: Note?,
+    theme: FluxaThemeTokens,
+    onDelete: (String) -> Unit = {},
+    onBack: () -> Unit = {},
+): FluxaNode {
     if (note == null) {
         return screen(
             FeatureCard(
@@ -62,11 +68,11 @@ fun noteDetailScreen(note: Note?, theme: FluxaThemeTokens): FluxaNode {
             button(
                 label = "Delete",
                 style = FluxaStyles.secondaryButton(theme),
-            ),
+            ).onClick { onDelete(note.id) },
             button(
-                label = "Edit",
+                label = "Back",
                 style = FluxaStyles.primaryButton(theme),
-            ),
+            ).onClick { onBack() },
         ),
     )
 }

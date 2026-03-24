@@ -11,9 +11,16 @@ import dev.fluxa.ui.SectionHeader
 import dev.fluxa.ui.button
 import dev.fluxa.ui.divider
 import dev.fluxa.ui.screen
+import dev.fluxa.ui.onCheckedChange
+import dev.fluxa.ui.onClick
 import dev.fluxa.ui.toggle
 
-fun settingsScreen(isDark: Boolean, theme: FluxaThemeTokens): FluxaNode = screen(
+fun settingsScreen(
+    isDark: Boolean,
+    theme: FluxaThemeTokens,
+    onToggleDark: (Boolean) -> Unit = {},
+    onClearCache: () -> Unit = {},
+): FluxaNode = screen(
     SectionHeader(title = "Settings", theme = theme),
     FeatureCard(
         title = "Appearance",
@@ -24,7 +31,7 @@ fun settingsScreen(isDark: Boolean, theme: FluxaThemeTokens): FluxaNode = screen
         label = "Dark mode",
         checked = isDark,
         style = style { padding(FluxaAxisScale.SM) },
-    ),
+    ).onCheckedChange { onToggleDark(it) },
     divider(style = FluxaStyles.divider(theme)),
     FeatureCard(
         title = "Data",
@@ -34,7 +41,7 @@ fun settingsScreen(isDark: Boolean, theme: FluxaThemeTokens): FluxaNode = screen
     button(
         label = "Clear cache",
         style = FluxaStyles.secondaryButton(theme),
-    ),
+    ).onClick { onClearCache() },
     divider(style = FluxaStyles.divider(theme)),
     NoticeCard(
         title = "About",

@@ -81,13 +81,31 @@ private fun DemoApp() {
     FluxaTheme(theme = theme) {
         FluxaRouter(backStack = backStack) { route ->
             val tree = when (route) {
-                is Routes.Home -> homeScreen(storeState, theme)
+                is Routes.Home -> homeScreen(
+                    state = storeState,
+                    theme = theme,
+                    onNoteClick = { id -> backStack.push(Routes.NoteDetail(id)) },
+                    onNewNote = { backStack.push(Routes.CreateNote) },
+                )
                 is Routes.NoteDetail -> {
                     val note = storeState.notes.find { it.id == route.noteId }
-                    noteDetailScreen(note, theme)
+                    noteDetailScreen(
+                        note = note,
+                        theme = theme,
+                        onDelete = { id ->
+                            noteStore.dispatch(NoteAction.Delete(id))
+                            backStack.pop()
+                        },
+                        onBack = { backStack.pop() },
+                    )
                 }
                 is Routes.CreateNote -> createNoteScreen(theme)
-                is Routes.Settings -> settingsScreen(useDark, theme)
+                is Routes.Settings -> settingsScreen(
+                    isDark = useDark,
+                    theme = theme,
+                    onToggleDark = { useDark = it },
+                    onClearCache = { noteApi.invalidateCache() },
+                )
                 else -> homeScreen(storeState, theme)
             }
 

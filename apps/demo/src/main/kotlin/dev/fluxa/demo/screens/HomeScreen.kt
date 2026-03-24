@@ -21,10 +21,16 @@ import dev.fluxa.ui.column
 import dev.fluxa.ui.row
 import dev.fluxa.ui.screen
 import dev.fluxa.ui.text
+import dev.fluxa.ui.onClick
 import dev.fluxa.ui.textField
 import dev.fluxa.ui.withVariants
 
-fun homeScreen(state: NoteState, theme: FluxaThemeTokens): FluxaNode = screen(
+fun homeScreen(
+    state: NoteState,
+    theme: FluxaThemeTokens,
+    onNoteClick: (String) -> Unit = {},
+    onNewNote: () -> Unit = {},
+): FluxaNode = screen(
     HeroPanel(
         title = "Fluxa Notes",
         subtitle = "${state.filteredNotes.size} notes",
@@ -40,12 +46,12 @@ fun homeScreen(state: NoteState, theme: FluxaThemeTokens): FluxaNode = screen(
     ),
     SectionHeader(title = "Recent", theme = theme),
     *state.filteredNotes.map { note ->
-        noteCard(note, theme)
+        noteCard(note, theme).onClick { onNoteClick(note.id) }
     }.toTypedArray(),
     button(
         label = "New Note",
         style = FluxaStyles.primaryButton(theme),
-    ),
+    ).onClick { onNewNote() },
 )
 
 private fun noteCard(note: Note, theme: FluxaThemeTokens): FluxaNode = column(
