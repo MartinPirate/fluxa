@@ -336,9 +336,11 @@ private fun Map<String, String>.resolveColor(instruction: FluxaStyleInstruction)
 private fun Map<String, String>.resolveTypography(instruction: FluxaStyleInstruction): TextStyle? {
     val raw = this[instruction.value] ?: instruction.value
     return when (raw) {
-        "title-lg" -> TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold)
         "hero" -> TextStyle(fontSize = 42.sp, lineHeight = 48.sp, fontWeight = FontWeight.Bold)
+        "title-lg" -> TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.SemiBold)
+        "body-md" -> TextStyle(fontSize = 16.sp, lineHeight = 24.sp, fontWeight = FontWeight.Normal)
         "label-md" -> TextStyle(fontSize = 14.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium)
+        "caption-sm" -> TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Normal)
         else -> null
     }
 }
