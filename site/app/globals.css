@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+:root {
+  --aurora-page: #F4F7FB;
+  --aurora-text: #0F1720;
+  --aurora-text-secondary: #5A6778;
+  --aurora-panel: #E8EEF9;
+  --aurora-panel-accent: #D5E4FF;
+  --aurora-panel-border: #C2D6F6;
+  --aurora-pill: #DCE8FF;
+  --aurora-pill-text: #14315C;
+  --aurora-spotlight: #111827;
+  --aurora-spotlight-text: #F8FAFC;
+  --aurora-success: #B7F5C8;
+  --aurora-success-text: #0C3B1D;
+  --aurora-divider: #D0D9E6;
+  --aurora-gradient-start: #D5E4FF;
+  --aurora-gradient-mid: #E8EEF9;
+  --aurora-gradient-end: #F4F7FB;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--aurora-page);
+  color: var(--aurora-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--aurora-panel-accent);
+  color: var(--aurora-text);
+}
