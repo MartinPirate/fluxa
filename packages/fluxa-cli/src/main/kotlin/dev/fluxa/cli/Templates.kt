@@ -70,8 +70,13 @@ object Templates {
         |}
         |
         |dependencies {
-        |    // TODO: replace with published Fluxa dependency once available
-        |    // implementation("dev.fluxa:fluxa-compose:<version>")
+        |    // Fluxa framework
+        |    // TODO: replace with published version once available on Maven Central
+        |    // implementation("dev.fluxa:fluxa-compose:0.1.0")
+        |    // implementation("dev.fluxa:fluxa-nav:0.1.0")
+        |    // implementation("dev.fluxa:fluxa-effect:0.1.0")
+        |    // implementation("dev.fluxa:fluxa-data:0.1.0")
+        |    // implementation("dev.fluxa:fluxa-store:0.1.0")
         |
         |    val composeBom = platform("androidx.compose:compose-bom:2026.02.01")
         |    implementation(composeBom)
@@ -115,15 +120,21 @@ object Templates {
         |import android.os.Bundle
         |import androidx.activity.ComponentActivity
         |import androidx.activity.compose.setContent
-        |import ${packageName}.ui.HomeScreen
-        |import ${packageName}.ui.theme.AppThemeWrapper
+        |import dev.fluxa.compose.FluxaRenderContext
+        |import dev.fluxa.compose.FluxaTheme
+        |import dev.fluxa.compose.RenderFluxaNode
+        |import dev.fluxa.style.FluxaThemes
+        |import ${packageName}.ui.homeTree
         |
         |class MainActivity : ComponentActivity() {
         |    override fun onCreate(savedInstanceState: Bundle?) {
         |        super.onCreate(savedInstanceState)
         |        setContent {
-        |            AppThemeWrapper {
-        |                HomeScreen()
+        |            FluxaTheme(theme = FluxaThemes.Aurora) {
+        |                RenderFluxaNode(
+        |                    node = homeTree(),
+        |                    context = FluxaRenderContext(),
+        |                )
         |            }
         |        }
         |    }
@@ -133,48 +144,47 @@ object Templates {
     fun homeScreen(packageName: String, appLabel: String) = """
         |package ${packageName}.ui
         |
-        |import androidx.compose.foundation.layout.Arrangement
-        |import androidx.compose.foundation.layout.Column
-        |import androidx.compose.foundation.layout.fillMaxSize
-        |import androidx.compose.foundation.layout.padding
-        |import androidx.compose.material3.MaterialTheme
-        |import androidx.compose.material3.Surface
-        |import androidx.compose.material3.Text
-        |import androidx.compose.runtime.Composable
-        |import androidx.compose.ui.Alignment
-        |import androidx.compose.ui.Modifier
-        |import androidx.compose.ui.unit.dp
+        |import dev.fluxa.style.FluxaThemes
+        |import dev.fluxa.ui.FluxaNode
+        |import dev.fluxa.ui.HeroPanel
+        |import dev.fluxa.ui.FeatureCard
+        |import dev.fluxa.ui.PillRow
+        |import dev.fluxa.ui.screen
         |
-        |@Composable
-        |fun HomeScreen() {
-        |    Surface(modifier = Modifier.fillMaxSize()) {
-        |        Column(
-        |            modifier = Modifier.fillMaxSize().padding(24.dp),
-        |            verticalArrangement = Arrangement.Center,
-        |            horizontalAlignment = Alignment.CenterHorizontally,
-        |        ) {
-        |            Text(
-        |                text = "$appLabel",
-        |                style = MaterialTheme.typography.headlineLarge,
-        |            )
-        |            Text(
-        |                text = "Built with Fluxa",
-        |                style = MaterialTheme.typography.bodyLarge,
-        |            )
-        |        }
-        |    }
-        |}
+        |private val theme = FluxaThemes.Aurora
+        |
+        |fun homeTree(): FluxaNode = screen(
+        |    HeroPanel(
+        |        title = "$appLabel",
+        |        subtitle = "Built with Fluxa",
+        |        theme = theme,
+        |    ),
+        |    PillRow(
+        |        labels = listOf("Fast", "Typed", "Themeable"),
+        |        theme = theme,
+        |    ),
+        |    FeatureCard(
+        |        title = "Welcome",
+        |        body = "Start building your app with Fluxa components.",
+        |        theme = theme,
+        |    ),
+        |)
     """.trimMargin() + "\n"
 
     fun appTheme(packageName: String) = """
         |package ${packageName}.ui.theme
         |
-        |import androidx.compose.material3.MaterialTheme
         |import androidx.compose.runtime.Composable
+        |import dev.fluxa.compose.FluxaTheme
+        |import dev.fluxa.style.FluxaThemeTokens
+        |import dev.fluxa.style.FluxaThemes
         |
         |@Composable
-        |fun AppThemeWrapper(content: @Composable () -> Unit) {
-        |    MaterialTheme(content = content)
+        |fun AppThemeWrapper(
+        |    theme: FluxaThemeTokens = FluxaThemes.Aurora,
+        |    content: @Composable () -> Unit,
+        |) {
+        |    FluxaTheme(theme = theme, content = content)
         |}
     """.trimMargin() + "\n"
 
@@ -204,55 +214,39 @@ object Templates {
     fun screen(packageName: String, screenName: String) = """
         |package ${packageName}.ui
         |
-        |import androidx.compose.foundation.layout.Arrangement
-        |import androidx.compose.foundation.layout.Column
-        |import androidx.compose.foundation.layout.fillMaxSize
-        |import androidx.compose.foundation.layout.padding
-        |import androidx.compose.material3.MaterialTheme
-        |import androidx.compose.material3.Surface
-        |import androidx.compose.material3.Text
-        |import androidx.compose.runtime.Composable
-        |import androidx.compose.ui.Modifier
-        |import androidx.compose.ui.unit.dp
+        |import dev.fluxa.style.FluxaThemes
+        |import dev.fluxa.ui.FluxaNode
+        |import dev.fluxa.ui.SectionHeader
+        |import dev.fluxa.ui.FeatureCard
+        |import dev.fluxa.ui.screen
         |
-        |@Composable
-        |fun ${screenName}Screen() {
-        |    Surface(modifier = Modifier.fillMaxSize()) {
-        |        Column(
-        |            modifier = Modifier.fillMaxSize().padding(24.dp),
-        |            verticalArrangement = Arrangement.spacedBy(16.dp),
-        |        ) {
-        |            Text(
-        |                text = "$screenName",
-        |                style = MaterialTheme.typography.headlineMedium,
-        |            )
-        |        }
-        |    }
-        |}
+        |private val theme = FluxaThemes.Aurora
+        |
+        |fun ${screenName.replaceFirstChar { it.lowercase() }}Tree(): FluxaNode = screen(
+        |    SectionHeader(title = "$screenName", theme = theme),
+        |    FeatureCard(
+        |        title = "$screenName",
+        |        body = "This is the $screenName screen.",
+        |        theme = theme,
+        |    ),
+        |)
     """.trimMargin() + "\n"
 
     fun component(packageName: String, componentName: String) = """
         |package ${packageName}.ui.components
         |
-        |import androidx.compose.foundation.layout.Column
-        |import androidx.compose.foundation.layout.padding
-        |import androidx.compose.material3.MaterialTheme
-        |import androidx.compose.material3.Text
-        |import androidx.compose.runtime.Composable
-        |import androidx.compose.ui.Modifier
-        |import androidx.compose.ui.unit.dp
+        |import dev.fluxa.style.FluxaStyle
+        |import dev.fluxa.style.FluxaThemeTokens
+        |import dev.fluxa.style.FluxaThemes
+        |import dev.fluxa.ui.FluxaNode
+        |import dev.fluxa.ui.column
+        |import dev.fluxa.ui.text
         |
-        |@Composable
         |fun $componentName(
-        |    modifier: Modifier = Modifier,
-        |) {
-        |    Column(modifier = modifier.padding(16.dp)) {
-        |        Text(
-        |            text = "$componentName",
-        |            style = MaterialTheme.typography.bodyLarge,
-        |        )
-        |    }
-        |}
+        |    theme: FluxaThemeTokens = FluxaThemes.Aurora,
+        |): FluxaNode = column(
+        |    text("$componentName"),
+        |)
     """.trimMargin() + "\n"
 
     fun featureModuleBuildGradle(packageName: String) = """
