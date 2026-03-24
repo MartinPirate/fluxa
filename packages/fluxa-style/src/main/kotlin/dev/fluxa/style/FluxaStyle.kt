@@ -228,6 +228,13 @@ class FluxaStyleBuilder {
         easing: FluxaEasing = FluxaEasing.EASE_IN_OUT,
     ) = use(AnimateOn(variant, duration, easing))
 
+    fun gesture(type: FluxaGestureType, action: String = type.name.lowercase()) =
+        use(GestureHandler(type, action))
+
+    fun clickable(action: String = "click") = use(Clickable(action))
+
+    fun scrollable(direction: String = "vertical") = use(Scrollable(direction))
+
     fun variant(name: FluxaVariant, block: FluxaVariantBuilder.() -> Unit) {
         val utilities = FluxaVariantBuilder().apply(block).build()
         variants.getOrPut(name) { mutableListOf() } += utilities
