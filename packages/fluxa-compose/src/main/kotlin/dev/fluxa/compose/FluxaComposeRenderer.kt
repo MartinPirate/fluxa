@@ -34,6 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.fluxa.runtime.FluxaBreakpoint
+import dev.fluxa.style.FluxaDuration
+import dev.fluxa.style.FluxaEasing
 import dev.fluxa.runtime.FluxaStyleInstruction
 import dev.fluxa.runtime.FluxaStyleSpec
 import dev.fluxa.style.FluxaStyle
@@ -230,6 +232,13 @@ private data class ResolvedStyle(
     val horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     val verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     val selfAlignment: String? = null,
+    val transitions: List<ResolvedTransition> = emptyList(),
+)
+
+data class ResolvedTransition(
+    val property: String,
+    val durationMs: Int,
+    val easing: String,
 )
 
 private fun FluxaStyle.resolve(context: FluxaRenderContext): ResolvedStyle = compile().resolve(context)
@@ -254,6 +263,7 @@ private fun FluxaStyleSpec.resolve(context: FluxaRenderContext): ResolvedStyle {
     var horizontalArrangement: Arrangement.Horizontal = Arrangement.Start
     var verticalArrangement: Arrangement.Vertical = Arrangement.Top
     var selfAlignment: String? = null
+    val transitions = mutableListOf<ResolvedTransition>()
 
     instructions.forEach { instruction ->
         when (instruction.name) {
@@ -308,6 +318,22 @@ private fun FluxaStyleSpec.resolve(context: FluxaRenderContext): ResolvedStyle {
                 val radius = instructions.lastOrNull { it.name == "radius" }?.value?.toIntOrNull() ?: 0
                 modifier = modifier.shadow(instruction.value.toIntOrNull()?.dp ?: 0.dp, radius.toShape())
             }
+            "transition" -> {
+                val parts = instruction.value.split("|")
+                transitions += ResolvedTransition(
+                    property = parts[0],
+                    durationMs = parts.getOrNull(1)?.toIntOrNull() ?: 200,
+                    easing = parts.getOrNull(2) ?: "ease_in_out",
+                )
+            }
+            "animateOn" -> {
+                val parts = instruction.value.split("|")
+                transitions += ResolvedTransition(
+                    property = parts[0],
+                    durationMs = parts.getOrNull(1)?.toIntOrNull() ?: 200,
+                    easing = parts.getOrNull(2) ?: "ease_in_out",
+                )
+            }
         }
     }
 
@@ -325,6 +351,7 @@ private fun FluxaStyleSpec.resolve(context: FluxaRenderContext): ResolvedStyle {
         horizontalArrangement = horizontalArrangement,
         verticalArrangement = verticalArrangement,
         selfAlignment = selfAlignment,
+        transitions = transitions,
     )
 }
 

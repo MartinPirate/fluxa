@@ -216,6 +216,18 @@ class FluxaStyleBuilder {
 
     fun alignSelf(alignment: FluxaAlignment) = use(AlignSelf(alignment))
 
+    fun transition(
+        property: String,
+        duration: FluxaDuration = FluxaDuration.NORMAL,
+        easing: FluxaEasing = FluxaEasing.EASE_IN_OUT,
+    ) = use(Transition(property, duration, easing))
+
+    fun animateOn(
+        variant: FluxaVariant,
+        duration: FluxaDuration = FluxaDuration.NORMAL,
+        easing: FluxaEasing = FluxaEasing.EASE_IN_OUT,
+    ) = use(AnimateOn(variant, duration, easing))
+
     fun variant(name: FluxaVariant, block: FluxaVariantBuilder.() -> Unit) {
         val utilities = FluxaVariantBuilder().apply(block).build()
         variants.getOrPut(name) { mutableListOf() } += utilities
