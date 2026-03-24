@@ -5,47 +5,71 @@ import java.net.HttpURLConnection
 import java.net.URI
 
 /**
- * Minimal HTTP client abstraction. Wraps java.net.HttpURLConnection
- * so apps don't need OkHttp for simple use cases.
+ * HTTP client with interceptor chain support. Wraps [HttpURLConnection]
+ * for zero external dependencies. Interceptors can add auth headers,
+ * retry failed requests, log traffic, or transform requests/responses.
  *
- * For production apps, swap in an adapter backed by OkHttp/Ktor.
+ * For production apps with advanced needs (HTTP/2, connection pooling),
+ * swap in an adapter backed by OkHttp or Ktor.
  */
 class FluxaHttpClient(
     private val baseUrl: String = "",
     private val defaultHeaders: Map<String, String> = emptyMap(),
     private val timeoutMs: Int = 15_000,
+    private val interceptors: List<FluxaInterceptor> = emptyList(),
 ) {
+    /** Execute a GET request. */
     suspend fun get(path: String, headers: Map<String, String> = emptyMap()): FluxaHttpResponse =
-        execute("GET", path, headers, body = null)
+        executeWithChain("GET", path, headers, body = null)
 
+    /** Execute a POST request with a JSON body. */
     suspend fun post(path: String, body: String, headers: Map<String, String> = emptyMap()): FluxaHttpResponse =
-        execute("POST", path, headers + ("Content-Type" to "application/json"), body)
+        executeWithChain("POST", path, headers + ("Content-Type" to "application/json"), body)
 
+    /** Execute a PUT request with a JSON body. */
     suspend fun put(path: String, body: String, headers: Map<String, String> = emptyMap()): FluxaHttpResponse =
-        execute("PUT", path, headers + ("Content-Type" to "application/json"), body)
+        executeWithChain("PUT", path, headers + ("Content-Type" to "application/json"), body)
 
+    /** Execute a DELETE request. */
     suspend fun delete(path: String, headers: Map<String, String> = emptyMap()): FluxaHttpResponse =
-        execute("DELETE", path, headers, body = null)
+        executeWithChain("DELETE", path, headers, body = null)
 
-    private suspend fun execute(
+    private suspend fun executeWithChain(
         method: String,
         path: String,
         headers: Map<String, String>,
         body: String?,
     ): FluxaHttpResponse {
+        val request = FluxaRequest(
+            method = method,
+            url = "$baseUrl$path",
+            headers = defaultHeaders + headers,
+            body = body,
+        )
+
+        val terminalChain = FluxaChain { req -> executeRaw(req) }
+
+        val chain = interceptors.foldRight(terminalChain) { interceptor, next ->
+            FluxaChain { req -> interceptor.intercept(req, next) }
+        }
+
+        return chain.proceed(request)
+    }
+
+    private suspend fun executeRaw(request: FluxaRequest): FluxaHttpResponse {
         return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-            val url = URI("$baseUrl$path").toURL()
+            val url = URI(request.url).toURL()
             val conn = url.openConnection() as HttpURLConnection
             try {
-                conn.requestMethod = method
+                conn.requestMethod = request.method
                 conn.connectTimeout = timeoutMs
                 conn.readTimeout = timeoutMs
 
-                (defaultHeaders + headers).forEach { (k, v) -> conn.setRequestProperty(k, v) }
+                request.headers.forEach { (k, v) -> conn.setRequestProperty(k, v) }
 
-                if (body != null) {
+                if (request.body != null) {
                     conn.doOutput = true
-                    conn.outputStream.bufferedWriter().use { it.write(body) }
+                    conn.outputStream.bufferedWriter().use { it.write(request.body) }
                 }
 
                 val code = conn.responseCode
@@ -63,12 +87,17 @@ class FluxaHttpClient(
     }
 }
 
+/**
+ * HTTP response with status code and body.
+ */
 data class FluxaHttpResponse(
     val statusCode: Int,
     val body: String,
 ) {
+    /** True if the status code is in the 2xx range. */
     val isSuccess: Boolean get() = statusCode in 200..299
 
+    /** Parse the body into a [FluxaResource]. */
     fun <T> toResource(parse: (String) -> T): FluxaResource<T> {
         return if (isSuccess) {
             try {
