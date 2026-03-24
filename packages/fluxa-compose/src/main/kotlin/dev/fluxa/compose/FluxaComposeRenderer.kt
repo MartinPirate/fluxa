@@ -619,16 +619,24 @@ private fun RenderImage(
     modifier: Modifier,
     resolved: ResolvedStyle,
 ) {
-    // Image rendering placeholder — will integrate with image loading in a future pass
-    Box(
-        modifier = modifier.background(
-            resolved.foreground ?: Color.LightGray,
-            RoundedCornerShape(8.dp),
-        ),
-        contentAlignment = Alignment.Center,
-    ) {
-        node.text?.let {
-            Text(text = it, color = Color.White, style = MaterialTheme.typography.labelSmall)
+    val source = node.meta["source"].orEmpty()
+    if (source.isNotBlank()) {
+        coil3.compose.AsyncImage(
+            model = source,
+            contentDescription = node.semantics?.contentDescription ?: node.text,
+            modifier = modifier,
+        )
+    } else {
+        Box(
+            modifier = modifier.background(
+                resolved.foreground ?: Color.LightGray,
+                RoundedCornerShape(8.dp),
+            ),
+            contentAlignment = Alignment.Center,
+        ) {
+            node.text?.let {
+                Text(text = it, color = Color.White, style = MaterialTheme.typography.labelSmall)
+            }
         }
     }
 }
