@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -13,10 +14,15 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.fluxa.state.FluxaState
 import dev.fluxa.state.FluxaStore
 import dev.fluxa.state.FluxaSelector
+import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 /**
- * Observe a FluxaState as Compose state.
+ * Observe a [FluxaState] as Compose state. The returned state
+ * updates whenever the source emits a new value and automatically
+ * unsubscribes when the composable leaves the tree.
  */
 @Composable
 fun <T> FluxaState<T>.collectAsState(): androidx.compose.runtime.State<T> {
@@ -31,7 +37,7 @@ fun <T> FluxaState<T>.collectAsState(): androidx.compose.runtime.State<T> {
 }
 
 /**
- * Observe a FluxaStore's state as Compose state.
+ * Observe a [FluxaStore]'s state as Compose state.
  */
 @Composable
 fun <S, A> FluxaStore<S, A>.collectAsState(): androidx.compose.runtime.State<S> {
@@ -46,7 +52,8 @@ fun <S, A> FluxaStore<S, A>.collectAsState(): androidx.compose.runtime.State<S> 
 }
 
 /**
- * Observe a FluxaSelector as Compose state.
+ * Observe a [FluxaSelector] as Compose state. Only triggers
+ * recomposition when the selected slice changes.
  */
 @Composable
 fun <S, R> FluxaSelector<S, R>.collectAsState(): androidx.compose.runtime.State<R> {
@@ -61,8 +68,9 @@ fun <S, R> FluxaSelector<S, R>.collectAsState(): androidx.compose.runtime.State<
 }
 
 /**
- * Run a suspend effect tied to lifecycle.
- * Cancels on STOPPED, restarts on STARTED.
+ * Run a suspend effect tied to the lifecycle owner.
+ * [onStart] fires on [Lifecycle.Event.ON_START] and is cancelled on STOP.
+ * [onStop] fires on [Lifecycle.Event.ON_STOP] and on composable disposal.
  */
 @Composable
 fun FluxaLifecycleEffect(
@@ -71,25 +79,29 @@ fun FluxaLifecycleEffect(
     onStop: () -> Unit = {},
 ) {
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val scope = rememberCoroutineScope()
 
     DisposableEffect(lifecycle, *keys) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
+                Lifecycle.Event.ON_START -> scope.launch { onStart() }
                 Lifecycle.Event.ON_STOP -> onStop()
                 else -> {}
             }
         }
         lifecycle.addObserver(observer)
-        onDispose { lifecycle.removeObserver(observer) }
-    }
-
-    LaunchedEffect(lifecycle, *keys) {
-        onStart()
+        onDispose {
+            lifecycle.removeObserver(observer)
+            onStop()
+        }
     }
 }
 
 /**
- * Run a polling effect at a fixed interval.
+ * Run a polling effect at a fixed interval. The action is called
+ * repeatedly with [intervalMs] delay between invocations. Exceptions
+ * in [action] are caught and logged to prevent crash-restart storms.
+ * Minimum interval is clamped to 1000ms.
  */
 @Composable
 fun FluxaPollingEffect(
@@ -97,10 +109,17 @@ fun FluxaPollingEffect(
     vararg keys: Any?,
     action: suspend () -> Unit,
 ) {
-    LaunchedEffect(keys) {
-        while (true) {
-            action()
-            delay(intervalMs)
+    val safeInterval = intervalMs.coerceAtLeast(1_000L)
+
+    LaunchedEffect(*keys) {
+        while (coroutineContext.isActive) {
+            try {
+                action()
+            } catch (e: Exception) {
+                // Log but do not crash — prevents restart storms
+                e.printStackTrace()
+            }
+            delay(safeInterval)
         }
     }
 }
@@ -113,7 +132,7 @@ fun FluxaOnceEffect(
     vararg keys: Any?,
     action: suspend () -> Unit,
 ) {
-    LaunchedEffect(keys) {
+    LaunchedEffect(*keys) {
         action()
     }
 }
