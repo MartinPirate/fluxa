@@ -10,6 +10,41 @@ data class FluxaNode(
     val style: FluxaStyle = styleOf(),
     val activeVariants: Set<FluxaVariant> = emptySet(),
     val children: List<FluxaNode> = emptyList(),
+    val meta: Map<String, String> = emptyMap(),
+    val semantics: FluxaSemantics? = null,
+)
+
+data class FluxaSemantics(
+    val contentDescription: String? = null,
+    val role: FluxaRole? = null,
+    val heading: Boolean = false,
+    val disabled: Boolean = false,
+    val liveRegion: Boolean = false,
+)
+
+enum class FluxaRole {
+    BUTTON,
+    CHECKBOX,
+    SWITCH,
+    IMAGE,
+    TAB,
+    HEADING,
+}
+
+fun FluxaNode.withSemantics(
+    contentDescription: String? = null,
+    role: FluxaRole? = null,
+    heading: Boolean = false,
+    disabled: Boolean = false,
+    liveRegion: Boolean = false,
+): FluxaNode = copy(
+    semantics = FluxaSemantics(
+        contentDescription = contentDescription,
+        role = role,
+        heading = heading,
+        disabled = disabled,
+        liveRegion = liveRegion,
+    ),
 )
 
 fun screen(vararg children: FluxaNode): FluxaNode = FluxaNode(

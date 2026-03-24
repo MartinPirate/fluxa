@@ -152,4 +152,43 @@ object FluxaStyles {
         typography(theme.typography.label)
         weight(FluxaWeight.SEMIBOLD)
     }
+
+    fun textInput(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("full")
+        background(theme.colors.inputBackground)
+        foreground(theme.colors.textPrimary)
+        padding(FluxaAxisScale.MD)
+        radius(FluxaRadiusScale.MD)
+        border(theme.colors.inputBorder, FluxaBorderScale.THIN)
+        typography(theme.typography.body)
+
+        variant(FluxaVariant.DISABLED) {
+            opacity(0.5f)
+        }
+    }
+
+    fun primaryButton(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        background(theme.colors.spotlight)
+        foreground(theme.colors.spotlightText)
+        paddingX(FluxaAxisScale.XL)
+        paddingY(FluxaAxisScale.MD)
+        radius(FluxaRadiusScale.MD)
+        typography(theme.typography.label)
+        weight(FluxaWeight.SEMIBOLD)
+        alignItems(FluxaAlignment.CENTER)
+
+        variant(FluxaVariant.PRESSED) {
+            opacity(0.88f)
+        }
+
+        variant(FluxaVariant.DISABLED) {
+            opacity(0.4f)
+        }
+    }
+
+    fun divider(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("full")
+        background(theme.colors.divider)
+        height("1")
+    }
 }

@@ -10,16 +10,28 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,10 +41,15 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.fluxa.ui.FluxaSemantics
 import dev.fluxa.runtime.FluxaBreakpoint
 import dev.fluxa.style.FluxaDuration
 import dev.fluxa.style.FluxaEasing
@@ -75,12 +92,23 @@ fun RenderFluxaNode(
         context = context.copy(activeVariants = context.activeVariants + node.activeVariants),
     )
 
+    val baseModifier = modifier.then(resolved.modifier).thenSemantics(node.semantics)
+
     when (node.type) {
-        "Screen" -> RenderScreen(node, modifier.then(resolved.modifier), context, resolved, inheritedForeground, inheritedTextStyle)
-        "Column" -> RenderColumn(node, modifier.then(resolved.modifier), context, resolved, inheritedForeground, inheritedTextStyle)
-        "Row" -> RenderRow(node, modifier.then(resolved.modifier), context, resolved, inheritedForeground, inheritedTextStyle)
-        "Stack" -> RenderStack(node, modifier.then(resolved.modifier), context, resolved, inheritedForeground, inheritedTextStyle)
-        "Text" -> RenderText(node, modifier.then(resolved.modifier), resolved, inheritedForeground, inheritedTextStyle)
+        "Screen" -> RenderScreen(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
+        "Column" -> RenderColumn(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
+        "Row" -> RenderRow(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
+        "Stack" -> RenderStack(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
+        "Text" -> RenderText(node, baseModifier, resolved, inheritedForeground, inheritedTextStyle)
+        "TextField" -> RenderTextField(node, baseModifier, resolved)
+        "Toggle" -> RenderToggle(node, baseModifier, resolved, inheritedForeground, inheritedTextStyle)
+        "Checkbox" -> RenderCheckbox(node, baseModifier, resolved, inheritedForeground, inheritedTextStyle)
+        "Button" -> RenderButton(node, baseModifier, resolved)
+        "Divider" -> RenderDivider(node, baseModifier, resolved)
+        "Spacer" -> RenderSpacer(baseModifier, resolved)
+        "Image" -> RenderImage(node, baseModifier, resolved)
+        "LazyColumn" -> RenderLazyColumn(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
+        "LazyRow" -> RenderLazyRow(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
         else -> RenderFallback(node, modifier)
     }
 }
@@ -456,4 +484,208 @@ private fun BoxScope.childStackModifier(child: ResolvedStyle): Modifier = when (
     "center" -> Modifier.align(Alignment.Center)
     "end" -> Modifier.align(Alignment.BottomEnd)
     else -> Modifier.align(Alignment.TopStart)
+}
+
+@Composable
+private fun RenderTextField(
+    node: FluxaNode,
+    modifier: Modifier,
+    resolved: ResolvedStyle,
+) {
+    val placeholder = node.meta["placeholder"].orEmpty()
+    val enabled = node.meta["enabled"] != "false"
+    var value by remember { mutableStateOf("") }
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = { value = it },
+        modifier = modifier,
+        label = node.text?.takeIf { it.isNotBlank() }?.let { { Text(it) } },
+        placeholder = placeholder.takeIf { it.isNotBlank() }?.let { { Text(it) } },
+        enabled = enabled,
+        shape = RoundedCornerShape(8.dp),
+    )
+}
+
+@Composable
+private fun RenderToggle(
+    node: FluxaNode,
+    modifier: Modifier,
+    resolved: ResolvedStyle,
+    inheritedForeground: Color?,
+    inheritedTextStyle: TextStyle?,
+) {
+    val enabled = node.meta["enabled"] != "false"
+    var checked by remember { mutableStateOf(node.meta["checked"] == "true") }
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        node.text?.takeIf { it.isNotBlank() }?.let {
+            Text(
+                text = it,
+                color = resolved.foreground ?: inheritedForeground ?: MaterialTheme.colorScheme.onSurface,
+                style = resolved.textStyle ?: inheritedTextStyle ?: MaterialTheme.typography.bodyLarge,
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = { checked = it },
+            enabled = enabled,
+        )
+    }
+}
+
+@Composable
+private fun RenderCheckbox(
+    node: FluxaNode,
+    modifier: Modifier,
+    resolved: ResolvedStyle,
+    inheritedForeground: Color?,
+    inheritedTextStyle: TextStyle?,
+) {
+    val enabled = node.meta["enabled"] != "false"
+    var checked by remember { mutableStateOf(node.meta["checked"] == "true") }
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { checked = it },
+            enabled = enabled,
+        )
+        node.text?.takeIf { it.isNotBlank() }?.let {
+            Text(
+                text = it,
+                color = resolved.foreground ?: inheritedForeground ?: MaterialTheme.colorScheme.onSurface,
+                style = resolved.textStyle ?: inheritedTextStyle ?: MaterialTheme.typography.bodyLarge,
+            )
+        }
+    }
+}
+
+@Composable
+private fun RenderButton(
+    node: FluxaNode,
+    modifier: Modifier,
+    resolved: ResolvedStyle,
+) {
+    val enabled = node.meta["enabled"] != "false"
+
+    Button(
+        onClick = {},
+        modifier = modifier,
+        enabled = enabled,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = resolved.foreground?.let { Color.Unspecified } ?: MaterialTheme.colorScheme.primary,
+        ),
+    ) {
+        Text(text = node.text.orEmpty())
+    }
+}
+
+@Composable
+private fun RenderDivider(
+    node: FluxaNode,
+    modifier: Modifier,
+    resolved: ResolvedStyle,
+) {
+    HorizontalDivider(
+        modifier = modifier,
+        color = resolved.foreground ?: MaterialTheme.colorScheme.outline,
+    )
+}
+
+@Composable
+private fun RenderSpacer(
+    modifier: Modifier,
+    resolved: ResolvedStyle,
+) {
+    Spacer(modifier = modifier)
+}
+
+@Composable
+private fun RenderImage(
+    node: FluxaNode,
+    modifier: Modifier,
+    resolved: ResolvedStyle,
+) {
+    // Image rendering placeholder — will integrate with image loading in a future pass
+    Box(
+        modifier = modifier.background(
+            resolved.foreground ?: Color.LightGray,
+            RoundedCornerShape(8.dp),
+        ),
+        contentAlignment = Alignment.Center,
+    ) {
+        node.text?.let {
+            Text(text = it, color = Color.White, style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+private fun RenderLazyColumn(
+    node: FluxaNode,
+    modifier: Modifier,
+    context: FluxaRenderContext,
+    resolved: ResolvedStyle,
+    inheritedForeground: Color?,
+    inheritedTextStyle: TextStyle?,
+) {
+    androidx.compose.foundation.lazy.LazyColumn(
+        modifier = modifier,
+        verticalArrangement = resolved.verticalArrangement,
+        horizontalAlignment = resolved.horizontalAlignment,
+    ) {
+        items(node.children.size) { index ->
+            val child = node.children[index]
+            RenderFluxaNode(
+                node = child,
+                context = context,
+                inheritedForeground = resolved.foreground ?: inheritedForeground,
+                inheritedTextStyle = resolved.textStyle ?: inheritedTextStyle,
+            )
+        }
+    }
+}
+
+@Composable
+private fun RenderLazyRow(
+    node: FluxaNode,
+    modifier: Modifier,
+    context: FluxaRenderContext,
+    resolved: ResolvedStyle,
+    inheritedForeground: Color?,
+    inheritedTextStyle: TextStyle?,
+) {
+    androidx.compose.foundation.lazy.LazyRow(
+        modifier = modifier,
+        horizontalArrangement = resolved.horizontalArrangement,
+        verticalAlignment = resolved.verticalAlignment,
+    ) {
+        items(node.children.size) { index ->
+            val child = node.children[index]
+            RenderFluxaNode(
+                node = child,
+                context = context,
+                inheritedForeground = resolved.foreground ?: inheritedForeground,
+                inheritedTextStyle = resolved.textStyle ?: inheritedTextStyle,
+            )
+        }
+    }
+}
+
+private fun Modifier.thenSemantics(semantics: FluxaSemantics?): Modifier {
+    if (semantics == null) return this
+    return this.semantics {
+        semantics.contentDescription?.let { contentDescription = it }
+        if (semantics.heading) heading()
+    }
 }
