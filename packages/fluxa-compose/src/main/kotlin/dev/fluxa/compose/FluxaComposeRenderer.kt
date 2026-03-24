@@ -429,8 +429,9 @@ private fun Modifier.thenWidth(value: String): Modifier = when (value) {
     else -> this
 }
 
-private fun Modifier.thenHeight(value: String): Modifier = when (value) {
-    "full" -> fillMaxHeight()
+private fun Modifier.thenHeight(value: String): Modifier = when {
+    value == "full" -> fillMaxHeight()
+    value.toIntOrNull() != null -> height(value.toInt().dp)
     else -> this
 }
 
