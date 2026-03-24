@@ -10,8 +10,13 @@ dependencies {
 
 application {
     mainClass.set("dev.fluxa.cli.MainKt")
+    applicationName = "fluxa"
 }
 
 kotlin {
     jvmToolchain(21)
+}
+
+tasks.named<CreateStartScripts>("startScripts") {
+    applicationName = "fluxa"
 }
