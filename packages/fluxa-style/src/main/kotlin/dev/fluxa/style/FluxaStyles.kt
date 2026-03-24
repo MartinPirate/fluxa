@@ -102,4 +102,54 @@ object FluxaStyles {
             gap(FluxaAxisScale.LG)
         }
     }
+
+    fun featureCard(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("full")
+        background(theme.colors.panel)
+        foreground(theme.colors.textPrimary)
+        padding(FluxaAxisScale.LG)
+        gap(FluxaAxisScale.MD)
+        radius(FluxaRadiusScale.LG)
+        border(theme.colors.panelBorder, FluxaBorderScale.THIN)
+        typography(theme.typography.title)
+
+        variant(FluxaVariant.PRESSED) {
+            background(theme.colors.panelAccent)
+            opacity(0.92f)
+        }
+
+        responsive(FluxaBreakpoint.EXPANDED) {
+            padding(FluxaAxisScale.XL)
+            gap(FluxaAxisScale.LG)
+        }
+    }
+
+    fun pillRow(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("full")
+        gap(FluxaAxisScale.SM)
+        justifyContent(FluxaAlignment.SPACE_BETWEEN)
+        alignItems(FluxaAlignment.CENTER)
+
+        responsive(FluxaBreakpoint.MEDIUM) {
+            gap(FluxaAxisScale.MD)
+        }
+    }
+
+    fun noticeCard(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("full")
+        background(theme.colors.warning)
+        foreground(theme.colors.warningText)
+        padding(FluxaAxisScale.LG)
+        gap(FluxaAxisScale.SM)
+        radius(FluxaRadiusScale.LG)
+        border(theme.colors.panelBorder, FluxaBorderScale.THIN)
+    }
+
+    fun sectionHeader(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
+        width("full")
+        foreground(theme.colors.textPrimary)
+        paddingY(FluxaAxisScale.SM)
+        typography(theme.typography.label)
+        weight(FluxaWeight.SEMIBOLD)
+    }
 }

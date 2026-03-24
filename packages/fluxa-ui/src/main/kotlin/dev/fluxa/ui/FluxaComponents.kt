@@ -94,3 +94,48 @@ fun SelectableNotice(
 
     return if (selected) node.withVariants(FluxaVariant.SELECTED) else node
 }
+
+fun FeatureCard(
+    title: String,
+    body: String,
+    theme: FluxaThemeTokens = FluxaThemes.Aurora,
+    style: FluxaStyle = FluxaStyles.featureCard(theme),
+): FluxaNode = column(
+    style = style,
+    text(title),
+    text(body),
+)
+
+fun PillRow(
+    labels: List<String>,
+    theme: FluxaThemeTokens = FluxaThemes.Aurora,
+    style: FluxaStyle = FluxaStyles.pillRow(theme),
+): FluxaNode = row(
+    style = style,
+    *labels.map { label ->
+        stack(
+            style = FluxaStyles.pill(theme),
+            text(label),
+        )
+    }.toTypedArray(),
+)
+
+fun NoticeCard(
+    title: String,
+    body: String,
+    theme: FluxaThemeTokens = FluxaThemes.Aurora,
+    style: FluxaStyle = FluxaStyles.noticeCard(theme),
+): FluxaNode = column(
+    style = style,
+    text(title),
+    text(body),
+)
+
+fun SectionHeader(
+    title: String,
+    theme: FluxaThemeTokens = FluxaThemes.Aurora,
+    style: FluxaStyle = FluxaStyles.sectionHeader(theme),
+): FluxaNode = text(
+    value = title,
+    style = style,
+)
