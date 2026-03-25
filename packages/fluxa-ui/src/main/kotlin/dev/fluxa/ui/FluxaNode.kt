@@ -24,6 +24,8 @@ data class FluxaHandlers(
     val onLongClick: (() -> Unit)? = null,
     val onValueChange: ((String) -> Unit)? = null,
     val onCheckedChange: ((Boolean) -> Unit)? = null,
+    val onSubmit: (() -> Unit)? = null,
+    val onFocusChange: ((Boolean) -> Unit)? = null,
 )
 
 fun FluxaNode.onClick(handler: () -> Unit): FluxaNode = copy(
@@ -40,6 +42,14 @@ fun FluxaNode.onValueChange(handler: (String) -> Unit): FluxaNode = copy(
 
 fun FluxaNode.onCheckedChange(handler: (Boolean) -> Unit): FluxaNode = copy(
     handlers = handlers.copy(onCheckedChange = handler),
+)
+
+fun FluxaNode.onSubmit(handler: () -> Unit): FluxaNode = copy(
+    handlers = handlers.copy(onSubmit = handler),
+)
+
+fun FluxaNode.onFocusChange(handler: (Boolean) -> Unit): FluxaNode = copy(
+    handlers = handlers.copy(onFocusChange = handler),
 )
 
 data class FluxaSemantics(

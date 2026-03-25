@@ -14,17 +14,19 @@ data class FluxaInputConfig(
 fun textField(
     label: String = "",
     placeholder: String = "",
+    value: String = "",
     style: FluxaStyle = styleOf(),
     enabled: Boolean = true,
 ): FluxaNode = FluxaNode(
     type = "TextField",
     text = label,
     style = style,
-    meta = mapOf(
-        "inputType" to "text",
-        "placeholder" to placeholder,
-        "enabled" to enabled.toString(),
-    ),
+    meta = buildMap {
+        put("inputType", "text")
+        put("placeholder", placeholder)
+        put("enabled", enabled.toString())
+        if (value.isNotEmpty()) put("value", value)
+    },
 )
 
 fun toggle(

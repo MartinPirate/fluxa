@@ -12,26 +12,35 @@ import dev.fluxa.style.style
 fun InputField(
     label: String,
     placeholder: String = "",
+    value: String = "",
     theme: FluxaThemeTokens = FluxaThemes.Aurora,
     enabled: Boolean = true,
-): FluxaNode = column(
-    style = style {
-        width("full")
-        gap(FluxaAxisScale.XS)
-    },
-    text(
-        value = label,
-        style = style {
-            foreground(theme.colors.textSecondary)
-            typography(theme.typography.label)
-        },
-    ),
-    textField(
+    onValueChange: ((String) -> Unit)? = null,
+): FluxaNode {
+    val field = textField(
         placeholder = placeholder,
+        value = value,
         style = FluxaStyles.textInput(theme),
         enabled = enabled,
-    ),
-)
+    ).let { node ->
+        if (onValueChange != null) node.onValueChange(onValueChange) else node
+    }
+
+    return column(
+        style = style {
+            width("full")
+            gap(FluxaAxisScale.XS)
+        },
+        text(
+            value = label,
+            style = style {
+                foreground(theme.colors.textSecondary)
+                typography(theme.typography.label)
+            },
+        ),
+        field,
+    )
+}
 
 fun FormGroup(
     title: String = "",
