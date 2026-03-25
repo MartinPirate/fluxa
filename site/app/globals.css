@@ -42,3 +42,72 @@ body {
   background: var(--aurora-panel-accent);
   color: var(--aurora-text);
 }
+
+/* Orb drift animation */
+@keyframes orb-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, -30px) scale(1.1); }
+}
+
+/* Hero text shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.hero-gradient-text {
+  background-size: 200% auto;
+  animation: shimmer 6s linear infinite;
+}
+
+/* Glow pulse for CTA button */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.3), 0 0 60px rgba(37, 99, 235, 0.1); }
+  50% { box-shadow: 0 0 30px rgba(37, 99, 235, 0.5), 0 0 80px rgba(37, 99, 235, 0.2); }
+}
+
+.cta-glow {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* Feature card hover lift */
+.feature-card {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Module chip hover */
+.module-chip {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease;
+}
+
+.module-chip:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Typing cursor blink */
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Nav scroll effect */
+.nav-scrolled {
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom-color: var(--aurora-panel-border);
+}
+
+/* Stat number pulse on appear */
+@keyframes stat-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}

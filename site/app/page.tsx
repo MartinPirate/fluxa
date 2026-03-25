@@ -1,6 +1,9 @@
 import { CodeBlock } from "@/components/CodeBlock";
 import { FeatureGrid } from "@/components/FeatureGrid";
 import { ModuleMap } from "@/components/ModuleMap";
+import { AnimateIn } from "@/components/AnimateIn";
+import { CountUp } from "@/components/CountUp";
+import { GradientOrbs } from "@/components/GradientOrbs";
 
 const heroCode = `fun homeScreen(theme: FluxaThemeTokens) = screen(
     HeroPanel(
@@ -153,72 +156,86 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-40 pb-24 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--aurora-pill)] text-[var(--aurora-pill-text)] text-sm font-medium mb-8">
-            <span className="w-2 h-2 rounded-full bg-[var(--aurora-success)] animate-pulse" />
-            v0.1.0-dev — 13 modules, 124 tests, all phases complete
-          </div>
+      <section className="relative pt-40 pb-24 px-6 overflow-hidden">
+        <GradientOrbs />
 
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
-            Android UI that feels{" "}
-            <span className="bg-gradient-to-r from-[#14315C] via-[#2563eb] to-[#7c3aed] bg-clip-text text-transparent">
-              stricter, faster,
-            </span>
-            <br />
-            and more{" "}
-            <span className="bg-gradient-to-r from-[#7c3aed] via-[#2563eb] to-[#0C3B1D] bg-clip-text text-transparent">
-              visual
-            </span>
-          </h1>
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <AnimateIn delay={100} direction="up" duration={800}>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--aurora-pill)] text-[var(--aurora-pill-text)] text-sm font-medium mb-8">
+              <span className="w-2 h-2 rounded-full bg-[var(--aurora-success)] animate-pulse" />
+              v0.1.0-dev — 13 modules, 124 tests, all phases complete
+            </div>
+          </AnimateIn>
 
-          <p className="text-lg md:text-xl text-[var(--aurora-text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed">
-            Fluxa is an opinionated framework layer on top of Jetpack Compose.
-            Utility-first styling, typed navigation, unidirectional state, and a
-            CLI that scaffolds real projects — not boilerplate.
-          </p>
+          <AnimateIn delay={250} direction="up" duration={900}>
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
+              Android UI that feels{" "}
+              <span className="hero-gradient-text bg-gradient-to-r from-[#14315C] via-[#2563eb] to-[#7c3aed] bg-clip-text text-transparent">
+                stricter, faster,
+              </span>
+              <br />
+              and more{" "}
+              <span className="hero-gradient-text bg-gradient-to-r from-[#7c3aed] via-[#2563eb] to-[#0C3B1D] bg-clip-text text-transparent">
+                visual
+              </span>
+            </h1>
+          </AnimateIn>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="https://github.com/MartinPirate/fluxa"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3.5 rounded-xl bg-[var(--aurora-spotlight)] text-white font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-[var(--aurora-spotlight)]/20"
-            >
-              Get Started
-            </a>
-            <a
-              href="#code"
-              className="px-8 py-3.5 rounded-xl bg-white border border-[var(--aurora-panel-border)] text-[var(--aurora-text)] font-semibold hover:bg-[var(--aurora-panel)] transition-colors"
-            >
-              See the Code
-            </a>
-          </div>
+          <AnimateIn delay={450} direction="up" duration={800}>
+            <p className="text-lg md:text-xl text-[var(--aurora-text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed">
+              Fluxa is an opinionated framework layer on top of Jetpack Compose.
+              Utility-first styling, typed navigation, unidirectional state, and a
+              CLI that scaffolds real projects — not boilerplate.
+            </p>
+          </AnimateIn>
+
+          <AnimateIn delay={600} direction="up" duration={800}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="https://github.com/MartinPirate/fluxa"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cta-glow px-8 py-3.5 rounded-xl bg-[var(--aurora-spotlight)] text-white font-semibold hover:scale-[1.03] active:scale-[0.98] transition-transform shadow-lg shadow-[var(--aurora-spotlight)]/20"
+              >
+                Get Started
+              </a>
+              <a
+                href="#code"
+                className="px-8 py-3.5 rounded-xl bg-white border border-[var(--aurora-panel-border)] text-[var(--aurora-text)] font-semibold hover:bg-[var(--aurora-panel)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                See the Code
+              </a>
+            </div>
+          </AnimateIn>
         </div>
 
         {/* Hero code preview */}
-        <div className="max-w-2xl mx-auto mt-16">
-          <CodeBlock code={heroCode} filename="HomeScreen.kt" />
-        </div>
+        <AnimateIn delay={800} direction="up" duration={1000}>
+          <div className="max-w-2xl mx-auto mt-16 relative z-10">
+            <CodeBlock code={heroCode} filename="HomeScreen.kt" />
+          </div>
+        </AnimateIn>
       </section>
 
       {/* Stats bar */}
       <section className="border-y border-[var(--aurora-panel-border)] bg-white/40">
         <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { value: "13", label: "Modules" },
-            { value: "124+", label: "Tests" },
-            { value: "5,000+", label: "Lines of Kotlin" },
-            { value: "0", label: "External UI deps" },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <div className="text-3xl font-bold text-[var(--aurora-text)]">
-                {stat.value}
+            { value: 13, suffix: "", label: "Modules" },
+            { value: 124, suffix: "+", label: "Tests" },
+            { value: 5000, suffix: "+", label: "Lines of Kotlin" },
+            { value: 0, suffix: "", label: "External UI deps" },
+          ].map((stat, i) => (
+            <AnimateIn key={stat.label} delay={i * 100} direction="up">
+              <div>
+                <div className="text-3xl font-bold text-[var(--aurora-text)]">
+                  <CountUp end={stat.value} suffix={stat.suffix} />
+                </div>
+                <div className="text-sm text-[var(--aurora-text-secondary)] mt-1">
+                  {stat.label}
+                </div>
               </div>
-              <div className="text-sm text-[var(--aurora-text-secondary)] mt-1">
-                {stat.label}
-              </div>
-            </div>
+            </AnimateIn>
           ))}
         </div>
       </section>
@@ -226,7 +243,7 @@ export default function Home() {
       {/* Features */}
       <section id="features" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <AnimateIn direction="up" className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
               Everything you need to ship
             </h2>
@@ -234,7 +251,7 @@ export default function Home() {
               From style tokens to background tasks — one framework, one
               convention, zero assembly required.
             </p>
-          </div>
+          </AnimateIn>
           <FeatureGrid />
         </div>
       </section>
@@ -244,7 +261,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto space-y-32">
           {/* Before/After comparison */}
           <div>
-            <div className="text-center mb-12">
+            <AnimateIn direction="up" className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
                 Less boilerplate. Same platform.
               </h2>
@@ -252,133 +269,153 @@ export default function Home() {
                 Fluxa sits on Compose — you keep full platform access while writing
                 dramatically less code.
               </p>
-            </div>
+            </AnimateIn>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-wider text-red-500 mb-3">
-                  Raw Compose
+              <AnimateIn direction="left">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-red-500 mb-3">
+                    Raw Compose
+                  </div>
+                  <CodeBlock code={comparisonBefore} filename="Before.kt" />
                 </div>
-                <CodeBlock code={comparisonBefore} filename="Before.kt" />
-              </div>
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-wider text-[var(--aurora-success-text)] mb-3">
-                  Fluxa
+              </AnimateIn>
+              <AnimateIn direction="right">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-[var(--aurora-success-text)] mb-3">
+                    Fluxa
+                  </div>
+                  <CodeBlock code={comparisonAfter} filename="After.kt" />
                 </div>
-                <CodeBlock code={comparisonAfter} filename="After.kt" />
-              </div>
+              </AnimateIn>
             </div>
           </div>
 
           {/* Style DSL */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h3 className="text-2xl font-bold mb-4">
-                Styling that compiles
-              </h3>
-              <p className="text-[var(--aurora-text-secondary)] leading-relaxed mb-6">
-                Utility-first DSL with theme tokens, state variants, responsive
-                breakpoints, and motion — all type-checked by the Kotlin
-                compiler. Styles compile to a platform-agnostic IR that the
-                Compose renderer maps to modifiers.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {["Tokens", "Variants", "Responsive", "Motion", "Shadows", "Borders"].map(
-                  (tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 rounded-full bg-[var(--aurora-pill)] text-[var(--aurora-pill-text)] text-xs font-medium"
-                    >
-                      {tag}
-                    </span>
-                  )
-                )}
+            <AnimateIn direction="left">
+              <div>
+                <h3 className="text-2xl font-bold mb-4">
+                  Styling that compiles
+                </h3>
+                <p className="text-[var(--aurora-text-secondary)] leading-relaxed mb-6">
+                  Utility-first DSL with theme tokens, state variants, responsive
+                  breakpoints, and motion — all type-checked by the Kotlin
+                  compiler. Styles compile to a platform-agnostic IR that the
+                  Compose renderer maps to modifiers.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {["Tokens", "Variants", "Responsive", "Motion", "Shadows", "Borders"].map(
+                    (tag, i) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 rounded-full bg-[var(--aurora-pill)] text-[var(--aurora-pill-text)] text-xs font-medium hover:scale-105 transition-transform cursor-default"
+                      >
+                        {tag}
+                      </span>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
-            <CodeBlock code={styleCode} filename="FluxaStyles.kt" />
+            </AnimateIn>
+            <AnimateIn direction="right" delay={150}>
+              <CodeBlock code={styleCode} filename="FluxaStyles.kt" />
+            </AnimateIn>
           </div>
 
           {/* State management */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <CodeBlock code={storeCode} filename="NoteStore.kt" />
-            <div>
-              <h3 className="text-2xl font-bold mb-4">
-                State you can reason about
-              </h3>
-              <p className="text-[var(--aurora-text-secondary)] leading-relaxed mb-6">
-                FluxaStore with pure reducers, composable middleware, and derived
-                selectors. Thread-safe by default. collectAsState() bridges
-                directly to Compose recomposition. No ViewModel ceremony, no
-                Flow operators to learn.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {["Pure reducers", "Middleware", "Selectors", "Thread-safe", "collectAsState"].map(
-                  (tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-medium"
-                    >
-                      {tag}
-                    </span>
-                  )
-                )}
+            <AnimateIn direction="left">
+              <CodeBlock code={storeCode} filename="NoteStore.kt" />
+            </AnimateIn>
+            <AnimateIn direction="right" delay={150}>
+              <div>
+                <h3 className="text-2xl font-bold mb-4">
+                  State you can reason about
+                </h3>
+                <p className="text-[var(--aurora-text-secondary)] leading-relaxed mb-6">
+                  FluxaStore with pure reducers, composable middleware, and derived
+                  selectors. Thread-safe by default. collectAsState() bridges
+                  directly to Compose recomposition. No ViewModel ceremony, no
+                  Flow operators to learn.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {["Pure reducers", "Middleware", "Selectors", "Thread-safe", "collectAsState"].map(
+                    (tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-medium hover:scale-105 transition-transform cursor-default"
+                      >
+                        {tag}
+                      </span>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
+            </AnimateIn>
           </div>
 
           {/* Navigation */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h3 className="text-2xl font-bold mb-4">
-                Navigation without the ceremony
-              </h3>
-              <p className="text-[var(--aurora-text-secondary)] leading-relaxed mb-6">
-                Typed routes as Kotlin classes. Push, pop, replace, popTo — all
-                on an observable back stack. Animated transitions and system back
-                button handling come free. Deep link resolution maps URI
-                patterns to typed routes.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {["Typed routes", "Back stack", "Animated", "Deep links", "Back button"].map(
-                  (tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-medium"
-                    >
-                      {tag}
-                    </span>
-                  )
-                )}
+            <AnimateIn direction="left">
+              <div>
+                <h3 className="text-2xl font-bold mb-4">
+                  Navigation without the ceremony
+                </h3>
+                <p className="text-[var(--aurora-text-secondary)] leading-relaxed mb-6">
+                  Typed routes as Kotlin classes. Push, pop, replace, popTo — all
+                  on an observable back stack. Animated transitions and system back
+                  button handling come free. Deep link resolution maps URI
+                  patterns to typed routes.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {["Typed routes", "Back stack", "Animated", "Deep links", "Back button"].map(
+                    (tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-medium hover:scale-105 transition-transform cursor-default"
+                      >
+                        {tag}
+                      </span>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
-            <CodeBlock code={navCode} filename="Routes.kt" />
+            </AnimateIn>
+            <AnimateIn direction="right" delay={150}>
+              <CodeBlock code={navCode} filename="Routes.kt" />
+            </AnimateIn>
           </div>
 
           {/* CLI */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <CodeBlock code={cliCode} language="bash" filename="Terminal" />
-            <div>
-              <h3 className="text-2xl font-bold mb-4">
-                Zero to running in seconds
-              </h3>
-              <p className="text-[var(--aurora-text-secondary)] leading-relaxed mb-6">
-                The Fluxa CLI scaffolds complete projects with FluxaTheme,
-                FluxaNode screens, and proper build configuration. Generate
-                screens, components, feature modules, and stores — all
-                following framework conventions.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {["fluxa new", "generate screen", "generate component", "generate feature"].map(
-                  (tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-medium font-mono"
-                    >
-                      {tag}
-                    </span>
-                  )
-                )}
+            <AnimateIn direction="left">
+              <CodeBlock code={cliCode} language="bash" filename="Terminal" />
+            </AnimateIn>
+            <AnimateIn direction="right" delay={150}>
+              <div>
+                <h3 className="text-2xl font-bold mb-4">
+                  Zero to running in seconds
+                </h3>
+                <p className="text-[var(--aurora-text-secondary)] leading-relaxed mb-6">
+                  The Fluxa CLI scaffolds complete projects with FluxaTheme,
+                  FluxaNode screens, and proper build configuration. Generate
+                  screens, components, feature modules, and stores — all
+                  following framework conventions.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {["fluxa new", "generate screen", "generate component", "generate feature"].map(
+                    (tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-medium font-mono hover:scale-105 transition-transform cursor-default"
+                      >
+                        {tag}
+                      </span>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
+            </AnimateIn>
           </div>
         </div>
       </section>
@@ -386,7 +423,7 @@ export default function Home() {
       {/* Module architecture */}
       <section id="modules" className="py-24 px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
+          <AnimateIn direction="up" className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
               13 modules. One system.
             </h2>
@@ -394,40 +431,55 @@ export default function Home() {
               Clean package boundaries. No circular dependencies. Each module
               does one thing well.
             </p>
-          </div>
+          </AnimateIn>
           <ModuleMap />
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-6 bg-[var(--aurora-spotlight)] text-white">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-6">
-            Build your next Android app with Fluxa
-          </h2>
-          <p className="text-lg text-[#8A96A6] mb-10 max-w-xl mx-auto">
-            Open source. Kotlin-first. Built for teams that care about
-            developer experience and visual quality.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="https://github.com/MartinPirate/fluxa"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3.5 rounded-xl bg-white text-[var(--aurora-spotlight)] font-semibold hover:opacity-90 transition-opacity"
-            >
-              View on GitHub
-            </a>
-            <a
-              href="https://github.com/MartinPirate/fluxa/blob/main/docs/vision.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3.5 rounded-xl border border-[#2E3D50] text-white font-semibold hover:bg-[#1a2433] transition-colors"
-            >
-              Read the Vision
-            </a>
-          </div>
+      <section className="relative py-24 px-6 bg-[var(--aurora-spotlight)] text-white overflow-hidden">
+        {/* Subtle glow behind CTA */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div
+            className="absolute w-[600px] h-[600px] rounded-full opacity-[0.08] blur-[120px]"
+            style={{
+              background: "radial-gradient(circle, #2563eb 0%, transparent 70%)",
+              top: "-200px",
+              left: "50%",
+              transform: "translateX(-50%)",
+            }}
+          />
         </div>
+
+        <AnimateIn direction="up">
+          <div className="max-w-3xl mx-auto text-center relative z-10">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-6">
+              Build your next Android app with Fluxa
+            </h2>
+            <p className="text-lg text-[#8A96A6] mb-10 max-w-xl mx-auto">
+              Open source. Kotlin-first. Built for teams that care about
+              developer experience and visual quality.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="https://github.com/MartinPirate/fluxa"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-8 py-3.5 rounded-xl bg-white text-[var(--aurora-spotlight)] font-semibold hover:scale-[1.03] active:scale-[0.98] transition-transform"
+              >
+                View on GitHub
+              </a>
+              <a
+                href="https://github.com/MartinPirate/fluxa/blob/main/docs/vision.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-8 py-3.5 rounded-xl border border-[#2E3D50] text-white font-semibold hover:bg-[#1a2433] hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                Read the Vision
+              </a>
+            </div>
+          </div>
+        </AnimateIn>
       </section>
 
       {/* Footer */}

@@ -1,3 +1,7 @@
+"use client";
+
+import { AnimateIn } from "./AnimateIn";
+
 const features = [
   {
     title: "Utility-First Styling",
@@ -63,34 +67,33 @@ const iconMap: Record<string, string> = {
 export function FeatureGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-      {features.map((feature) => (
-        <div
-          key={feature.title}
-          className="group p-6 rounded-2xl bg-white/60 border border-[var(--aurora-panel-border)] hover:bg-white hover:shadow-lg hover:border-[var(--aurora-panel-accent)] transition-all duration-200"
-        >
-          <div className="w-10 h-10 rounded-xl bg-[var(--aurora-pill)] flex items-center justify-center mb-4 group-hover:bg-[var(--aurora-panel-accent)] transition-colors">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-5 h-5 text-[var(--aurora-pill-text)]"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d={iconMap[feature.icon]}
-              />
-            </svg>
+      {features.map((feature, i) => (
+        <AnimateIn key={feature.title} delay={i * 80} direction="up">
+          <div className="feature-card group p-6 rounded-2xl bg-white/60 border border-[var(--aurora-panel-border)] hover:bg-white hover:border-[var(--aurora-panel-accent)] cursor-default">
+            <div className="w-10 h-10 rounded-xl bg-[var(--aurora-pill)] flex items-center justify-center mb-4 group-hover:bg-[var(--aurora-panel-accent)] group-hover:scale-110 transition-all duration-300">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5 text-[var(--aurora-pill-text)]"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d={iconMap[feature.icon]}
+                />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold mb-2 text-[var(--aurora-text)]">
+              {feature.title}
+            </h3>
+            <p className="text-sm text-[var(--aurora-text-secondary)] leading-relaxed">
+              {feature.description}
+            </p>
           </div>
-          <h3 className="text-base font-semibold mb-2 text-[var(--aurora-text)]">
-            {feature.title}
-          </h3>
-          <p className="text-sm text-[var(--aurora-text-secondary)] leading-relaxed">
-            {feature.description}
-          </p>
-        </div>
+        </AnimateIn>
       ))}
     </div>
   );

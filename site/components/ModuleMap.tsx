@@ -1,3 +1,7 @@
+"use client";
+
+import { AnimateIn } from "./AnimateIn";
+
 const modules = [
   {
     name: "fluxa-runtime",
@@ -81,32 +85,43 @@ const modules = [
 
 const layers = ["Core", "Bridge", "App", "Dev"];
 
+let globalIndex = 0;
+
 export function ModuleMap() {
+  globalIndex = 0;
   return (
     <div className="space-y-6">
-      {layers.map((layer) => {
+      {layers.map((layer, layerIdx) => {
         const layerModules = modules.filter((m) => m.layer === layer);
         return (
-          <div key={layer}>
-            <div className="text-xs font-semibold uppercase tracking-wider text-[var(--aurora-text-secondary)] mb-3">
-              {layer} Layer
+          <AnimateIn key={layer} delay={layerIdx * 120} direction="up">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-[var(--aurora-text-secondary)] mb-3">
+                {layer} Layer
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {layerModules.map((mod) => {
+                  const idx = globalIndex++;
+                  return (
+                    <div
+                      key={mod.name}
+                      className={`module-chip px-4 py-3 rounded-xl border ${mod.color} text-sm cursor-default`}
+                      style={{
+                        animationDelay: `${idx * 60}ms`,
+                      }}
+                    >
+                      <div className="font-mono font-semibold text-xs">
+                        {mod.name}
+                      </div>
+                      <div className="mt-1 opacity-75 text-xs">
+                        {mod.description}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              {layerModules.map((mod) => (
-                <div
-                  key={mod.name}
-                  className={`px-4 py-3 rounded-xl border ${mod.color} text-sm`}
-                >
-                  <div className="font-mono font-semibold text-xs">
-                    {mod.name}
-                  </div>
-                  <div className="mt-1 opacity-75 text-xs">
-                    {mod.description}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          </AnimateIn>
         );
       })}
     </div>
