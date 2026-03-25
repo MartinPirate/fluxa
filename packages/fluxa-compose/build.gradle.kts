@@ -24,6 +24,7 @@ android {
 dependencies {
     api(project(":packages:fluxa-ui"))
     api(project(":packages:fluxa-style"))
+    api(project(":packages:fluxa-data"))
 
     val composeBom = platform("androidx.compose:compose-bom:2026.02.01")
     implementation(composeBom)
@@ -33,4 +34,9 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("io.coil-kt.coil3:coil-compose:3.1.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.14.1")
 }
+
+android.testOptions.unitTests.isIncludeAndroidResources = true
