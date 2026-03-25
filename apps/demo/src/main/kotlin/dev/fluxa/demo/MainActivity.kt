@@ -16,11 +16,14 @@ import androidx.compose.ui.Modifier
 import dev.fluxa.compose.FluxaRenderContext
 import dev.fluxa.compose.FluxaTheme
 import dev.fluxa.compose.RenderFluxaNode
+import dev.fluxa.compose.resourceNode
+import dev.fluxa.data.FluxaResource
 import dev.fluxa.demo.data.NoteApi
 import dev.fluxa.demo.screens.createNoteScreen
 import dev.fluxa.demo.screens.homeScreen
 import dev.fluxa.demo.screens.noteDetailScreen
 import dev.fluxa.demo.screens.settingsScreen
+import dev.fluxa.demo.store.Note
 import dev.fluxa.demo.store.NoteAction
 import dev.fluxa.demo.store.createNoteStore
 import dev.fluxa.demo.store.sampleNotes
@@ -58,13 +61,18 @@ private fun DemoApp() {
     val noteApi = remember { NoteApi() }
     val backStack = remember { FluxaBackStack(Routes.Home) }
     var useDark by remember { mutableStateOf(false) }
+    var newTitle by remember { mutableStateOf("") }
+    var newBody by remember { mutableStateOf("") }
+    var notesResource by remember { mutableStateOf<FluxaResource<List<Note>>>(FluxaResource.Idle) }
 
     val theme = if (useDark) FluxaThemes.AuroraDark else FluxaThemes.Aurora
     val storeState by noteStore.collectAsState()
 
-    // Load notes on first composition
+    // Load notes on first composition, tracking resource state
     FluxaOnceEffect(Unit) {
+        notesResource = FluxaResource.Loading
         val result = noteApi.fetchNotes()
+        notesResource = result
         val notes = result.dataOrNull()
         if (notes != null) {
             noteStore.dispatch(NoteAction.LoadAll(notes))
@@ -81,12 +89,28 @@ private fun DemoApp() {
     FluxaTheme(theme = theme) {
         FluxaRouter(backStack = backStack) { route ->
             val tree = when (route) {
-                is Routes.Home -> homeScreen(
-                    state = storeState,
+                is Routes.Home -> resourceNode(
+                    resource = notesResource,
                     theme = theme,
-                    onNoteClick = { id -> backStack.push(Routes.NoteDetail(id)) },
-                    onNewNote = { backStack.push(Routes.CreateNote) },
-                )
+                    loadingMessage = "Loading notes…",
+                    errorTitle = "Couldn't load notes",
+                    onRetry = {
+                        notesResource = FluxaResource.Loading
+                        // Re-trigger via polling effect
+                    },
+                ) {
+                    homeScreen(
+                        state = storeState,
+                        theme = theme,
+                        onNoteClick = { id -> backStack.push(Routes.NoteDetail(id)) },
+                        onNewNote = {
+                            newTitle = ""
+                            newBody = ""
+                            backStack.push(Routes.CreateNote)
+                        },
+                        onSearch = { query -> noteStore.dispatch(NoteAction.SetSearch(query)) },
+                    )
+                }
                 is Routes.NoteDetail -> {
                     val note = storeState.notes.find { it.id == route.noteId }
                     noteDetailScreen(
@@ -99,7 +123,24 @@ private fun DemoApp() {
                         onBack = { backStack.pop() },
                     )
                 }
-                is Routes.CreateNote -> createNoteScreen(theme)
+                is Routes.CreateNote -> createNoteScreen(
+                    theme = theme,
+                    title = newTitle,
+                    body = newBody,
+                    onTitleChange = { newTitle = it },
+                    onBodyChange = { newBody = it },
+                    onSave = {
+                        if (newTitle.isNotBlank()) {
+                            noteStore.dispatch(NoteAction.Add(Note(
+                                id = java.util.UUID.randomUUID().toString(),
+                                title = newTitle,
+                                body = newBody,
+                            )))
+                            backStack.pop()
+                        }
+                    },
+                    onCancel = { backStack.pop() },
+                )
                 is Routes.Settings -> settingsScreen(
                     isDark = useDark,
                     theme = theme,

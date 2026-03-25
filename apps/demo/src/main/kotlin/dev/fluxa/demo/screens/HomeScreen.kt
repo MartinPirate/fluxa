@@ -22,6 +22,7 @@ import dev.fluxa.ui.row
 import dev.fluxa.ui.screen
 import dev.fluxa.ui.text
 import dev.fluxa.ui.onClick
+import dev.fluxa.ui.onValueChange
 import dev.fluxa.ui.textField
 import dev.fluxa.ui.withVariants
 
@@ -30,6 +31,7 @@ fun homeScreen(
     theme: FluxaThemeTokens,
     onNoteClick: (String) -> Unit = {},
     onNewNote: () -> Unit = {},
+    onSearch: (String) -> Unit = {},
 ): FluxaNode = screen(
     HeroPanel(
         title = "Fluxa Notes",
@@ -42,8 +44,9 @@ fun homeScreen(
     ),
     textField(
         placeholder = "Search notes...",
+        value = state.searchQuery,
         style = FluxaStyles.textInput(theme),
-    ),
+    ).onValueChange { onSearch(it) },
     SectionHeader(title = "Recent", theme = theme),
     *state.filteredNotes.map { note ->
         noteCard(note, theme).onClick { onNoteClick(note.id) }
