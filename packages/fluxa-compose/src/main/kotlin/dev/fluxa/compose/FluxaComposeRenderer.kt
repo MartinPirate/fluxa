@@ -1,5 +1,14 @@
 package dev.fluxa.compose
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -49,8 +58,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.fluxa.ui.FluxaHandlers
@@ -67,6 +80,7 @@ import dev.fluxa.style.FluxaVariant
 import dev.fluxa.style.compile
 import dev.fluxa.style.withTheme
 import dev.fluxa.ui.FluxaNode
+import dev.fluxa.ui.FluxaRole
 
 data class FluxaRenderContext(
     val breakpoint: FluxaBreakpoint = FluxaBreakpoint.COMPACT,
@@ -97,25 +111,29 @@ fun RenderFluxaNode(
         context = context.copy(activeVariants = context.activeVariants + node.activeVariants),
     )
 
-    val baseModifier = modifier.then(resolved.modifier)
-        .thenHandlers(node.handlers)
+    val isDisabled = node.semantics?.disabled == true
+    val visualMod = resolved.visualModifier()
+    val animForeground = resolved.animatedForeground()
+    val animatedResolved = if (animForeground != null) resolved.copy(foreground = animForeground) else resolved
+    val baseModifier = modifier.then(resolved.modifier).then(visualMod)
+        .thenHandlers(node.handlers, isDisabled)
         .thenSemantics(node.semantics)
 
     when (node.type) {
-        "Screen" -> RenderScreen(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
-        "Column" -> RenderColumn(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
-        "Row" -> RenderRow(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
-        "Stack" -> RenderStack(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
-        "Text" -> RenderText(node, baseModifier, resolved, inheritedForeground, inheritedTextStyle)
-        "TextField" -> RenderTextField(node, baseModifier, resolved)
-        "Toggle" -> RenderToggle(node, baseModifier, resolved, inheritedForeground, inheritedTextStyle)
-        "Checkbox" -> RenderCheckbox(node, baseModifier, resolved, inheritedForeground, inheritedTextStyle)
-        "Button" -> RenderButton(node, baseModifier, resolved)
-        "Divider" -> RenderDivider(node, baseModifier, resolved)
-        "Spacer" -> RenderSpacer(baseModifier, resolved)
-        "Image" -> RenderImage(node, baseModifier, resolved)
-        "LazyColumn" -> RenderLazyColumn(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
-        "LazyRow" -> RenderLazyRow(node, baseModifier, context, resolved, inheritedForeground, inheritedTextStyle)
+        "Screen" -> RenderScreen(node, baseModifier, context, animatedResolved, inheritedForeground, inheritedTextStyle)
+        "Column" -> RenderColumn(node, baseModifier, context, animatedResolved, inheritedForeground, inheritedTextStyle)
+        "Row" -> RenderRow(node, baseModifier, context, animatedResolved, inheritedForeground, inheritedTextStyle)
+        "Stack" -> RenderStack(node, baseModifier, context, animatedResolved, inheritedForeground, inheritedTextStyle)
+        "Text" -> RenderText(node, baseModifier, animatedResolved, inheritedForeground, inheritedTextStyle)
+        "TextField" -> RenderTextField(node, baseModifier, animatedResolved)
+        "Toggle" -> RenderToggle(node, baseModifier, animatedResolved, inheritedForeground, inheritedTextStyle)
+        "Checkbox" -> RenderCheckbox(node, baseModifier, animatedResolved, inheritedForeground, inheritedTextStyle)
+        "Button" -> RenderButton(node, baseModifier, animatedResolved)
+        "Divider" -> RenderDivider(node, baseModifier, animatedResolved)
+        "Spacer" -> RenderSpacer(baseModifier, animatedResolved)
+        "Image" -> RenderImage(node, baseModifier, animatedResolved)
+        "LazyColumn" -> RenderLazyColumn(node, baseModifier, context, animatedResolved, inheritedForeground, inheritedTextStyle)
+        "LazyRow" -> RenderLazyRow(node, baseModifier, context, animatedResolved, inheritedForeground, inheritedTextStyle)
         else -> RenderFallback(node, modifier)
     }
 }
@@ -257,7 +275,7 @@ private fun RenderFallback(node: FluxaNode, modifier: Modifier) {
     )
 }
 
-private data class ResolvedStyle(
+internal data class ResolvedStyle(
     val modifier: Modifier = Modifier,
     val foreground: Color? = null,
     val textStyle: TextStyle? = null,
@@ -268,7 +286,19 @@ private data class ResolvedStyle(
     val verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     val selfAlignment: String? = null,
     val transitions: List<ResolvedTransition> = emptyList(),
-)
+    // Visual properties extracted for animation support
+    val backgroundColor: Color? = null,
+    val opacity: Float = 1f,
+    val borderColor: Color? = null,
+    val borderWidthDp: Int = 0,
+    val shadowDp: Int = 0,
+    val radiusDp: Int = 0,
+) {
+    val hasAnimations: Boolean get() = transitions.isNotEmpty()
+
+    fun transitionFor(property: String): ResolvedTransition? =
+        transitions.find { it.property == property }
+}
 
 data class ResolvedTransition(
     val property: String,
@@ -276,9 +306,95 @@ data class ResolvedTransition(
     val easing: String,
 )
 
-private fun FluxaStyle.resolve(context: FluxaRenderContext): ResolvedStyle = compile().resolve(context)
+/**
+ * Builds a Modifier for visual properties (background, opacity, border, shadow),
+ * animating them when transitions are defined in the style.
+ */
+@Composable
+private fun ResolvedStyle.visualModifier(): Modifier {
+    val shape = radiusDp.toShape()
 
-private fun FluxaStyleSpec.resolve(context: FluxaRenderContext): ResolvedStyle {
+    val bgColor = animateIfNeeded("background", backgroundColor ?: Color.Transparent)
+    val alpha = animateFloatIfNeeded("opacity", opacity)
+    val bColor = animateIfNeeded("border", borderColor ?: Color.Transparent)
+    val sDp = animateDpIfNeeded("shadow", shadowDp)
+
+    var mod: Modifier = Modifier
+    if (sDp > 0) mod = mod.shadow(sDp.dp, shape)
+    if (radiusDp > 0) mod = mod.clip(shape)
+    if (backgroundColor != null) mod = mod.background(bgColor)
+    if (borderColor != null) mod = mod.border(borderWidthDp.dp, bColor, shape)
+    if (alpha < 1f) mod = mod.alpha(alpha)
+    return mod
+}
+
+@Composable
+private fun ResolvedStyle.animateIfNeeded(property: String, target: Color): Color {
+    val transition = transitionFor(property) ?: return target
+    val animated by animateColorAsState(
+        targetValue = target,
+        animationSpec = transition.toTweenColor(),
+        label = "fluxa-$property",
+    )
+    return animated
+}
+
+@Composable
+private fun ResolvedStyle.animateFloatIfNeeded(property: String, target: Float): Float {
+    val transition = transitionFor(property) ?: return target
+    val animated by animateFloatAsState(
+        targetValue = target,
+        animationSpec = transition.toTweenFloat(),
+        label = "fluxa-$property",
+    )
+    return animated
+}
+
+@Composable
+private fun ResolvedStyle.animateDpIfNeeded(property: String, target: Int): Int {
+    val transition = transitionFor(property) ?: return target
+    val animated by animateDpAsState(
+        targetValue = target.dp,
+        animationSpec = transition.toTweenDp(),
+        label = "fluxa-$property",
+    )
+    return animated.value.toInt()
+}
+
+/**
+ * Animates the foreground color if a transition is defined for it.
+ */
+@Composable
+private fun ResolvedStyle.animatedForeground(): Color? {
+    val fg = foreground ?: return null
+    return animateIfNeeded("foreground", fg)
+}
+
+private fun ResolvedTransition.toEasing() = when (easing) {
+    "linear" -> LinearEasing
+    "ease_in" -> FastOutLinearInEasing
+    "ease_out" -> LinearOutSlowInEasing
+    "ease_in_out" -> FastOutSlowInEasing
+    else -> FastOutSlowInEasing
+}
+
+private fun <T> ResolvedTransition.toTween() = tween<T>(
+    durationMillis = durationMs,
+    easing = toEasing(),
+)
+
+private fun ResolvedTransition.toTweenColor() =
+    if (easing == "spring") spring<Color>() else toTween<Color>()
+
+private fun ResolvedTransition.toTweenFloat() =
+    if (easing == "spring") spring<Float>() else toTween<Float>()
+
+private fun ResolvedTransition.toTweenDp() =
+    if (easing == "spring") spring<androidx.compose.ui.unit.Dp>() else toTween<androidx.compose.ui.unit.Dp>()
+
+internal fun FluxaStyle.resolve(context: FluxaRenderContext): ResolvedStyle = compile().resolve(context)
+
+internal fun FluxaStyleSpec.resolve(context: FluxaRenderContext): ResolvedStyle {
     val tokenMap = tokens
     val instructions = buildList {
         addAll(base)
@@ -299,6 +415,13 @@ private fun FluxaStyleSpec.resolve(context: FluxaRenderContext): ResolvedStyle {
     var verticalArrangement: Arrangement.Vertical = Arrangement.Top
     var selfAlignment: String? = null
     val transitions = mutableListOf<ResolvedTransition>()
+    // Visual properties extracted for animation
+    var backgroundColor: Color? = null
+    var opacity = 1f
+    var borderColor: Color? = null
+    var borderWidthDp = 0
+    var shadowDp = 0
+    var radiusDp = 0
 
     instructions.forEach { instruction ->
         when (instruction.name) {
@@ -310,22 +433,9 @@ private fun FluxaStyleSpec.resolve(context: FluxaRenderContext): ResolvedStyle {
                 horizontalArrangement = Arrangement.spacedBy(space)
                 verticalArrangement = Arrangement.spacedBy(space)
             }
-            "background" -> {
-                val color = tokenMap.resolveColor(instruction)
-                val radius = instructions.lastOrNull { it.name == "radius" }?.value?.toIntOrNull() ?: 0
-                modifier = if (radius > 0) {
-                    modifier.clip(RoundedCornerShape(radius.dp)).background(color)
-                } else {
-                    modifier.background(color)
-                }
-            }
-            "radius" -> {
-                if (instructions.none { it.name == "background" }) {
-                    val radius = instruction.value.toIntOrNull() ?: 0
-                    modifier = modifier.clip(RoundedCornerShape(radius.dp))
-                }
-            }
-            "opacity" -> modifier = modifier.alpha(instruction.value.toFloatOrNull() ?: 1f)
+            "background" -> backgroundColor = tokenMap.resolveColor(instruction)
+            "radius" -> radiusDp = instruction.value.toIntOrNull() ?: 0
+            "opacity" -> opacity = instruction.value.toFloatOrNull() ?: 1f
             "foreground" -> foreground = tokenMap.resolveColor(instruction)
             "typography" -> typography = tokenMap.resolveTypography(instruction)
             "fontWeight" -> fontWeight = instruction.value.toIntOrNull()?.toFontWeight()
@@ -342,17 +452,11 @@ private fun FluxaStyleSpec.resolve(context: FluxaRenderContext): ResolvedStyle {
             }
             "alignSelf" -> selfAlignment = instruction.value
             "border" -> {
-                val (token, width) = instruction.value.split("|").let { parts ->
-                    parts.first() to (parts.getOrNull(1)?.toIntOrNull() ?: 1)
-                }
-                val radius = instructions.lastOrNull { it.name == "radius" }?.value?.toIntOrNull() ?: 0
-                val shape = radius.toShape()
-                modifier = modifier.border(width.dp, tokenMap.resolveColor(token), shape)
+                val parts = instruction.value.split("|")
+                borderColor = tokenMap.resolveColor(parts.first())
+                borderWidthDp = parts.getOrNull(1)?.toIntOrNull() ?: 1
             }
-            "shadow" -> {
-                val radius = instructions.lastOrNull { it.name == "radius" }?.value?.toIntOrNull() ?: 0
-                modifier = modifier.shadow(instruction.value.toIntOrNull()?.dp ?: 0.dp, radius.toShape())
-            }
+            "shadow" -> shadowDp = instruction.value.toIntOrNull() ?: 0
             "transition" -> {
                 val parts = instruction.value.split("|")
                 transitions += ResolvedTransition(
@@ -387,6 +491,12 @@ private fun FluxaStyleSpec.resolve(context: FluxaRenderContext): ResolvedStyle {
         verticalArrangement = verticalArrangement,
         selfAlignment = selfAlignment,
         transitions = transitions,
+        backgroundColor = backgroundColor,
+        opacity = opacity,
+        borderColor = borderColor,
+        borderWidthDp = borderWidthDp,
+        shadowDp = shadowDp,
+        radiusDp = radiusDp,
     )
 }
 
@@ -418,13 +528,13 @@ private fun Map<String, String>.resolveColor(token: String): Color {
     return raw.toColor()
 }
 
-private fun widthBreakpoint(widthDp: Float): FluxaBreakpoint = when {
+internal fun widthBreakpoint(widthDp: Float): FluxaBreakpoint = when {
     widthDp >= 840f -> FluxaBreakpoint.EXPANDED
     widthDp >= 600f -> FluxaBreakpoint.MEDIUM
     else -> FluxaBreakpoint.COMPACT
 }
 
-private fun Int.toFontWeight(): FontWeight = when (this) {
+internal fun Int.toFontWeight(): FontWeight = when (this) {
     500 -> FontWeight.Medium
     600 -> FontWeight.SemiBold
     700 -> FontWeight.Bold
@@ -443,39 +553,39 @@ private fun Modifier.thenHeight(value: String): Modifier = when {
     else -> this
 }
 
-private fun String.toHorizontalAlignment(): Alignment.Horizontal = when (this) {
+internal fun String.toHorizontalAlignment(): Alignment.Horizontal = when (this) {
     "center" -> Alignment.CenterHorizontally
     "end" -> Alignment.End
     else -> Alignment.Start
 }
 
-private fun String.toVerticalAlignment(): Alignment.Vertical = when (this) {
+internal fun String.toVerticalAlignment(): Alignment.Vertical = when (this) {
     "center" -> Alignment.CenterVertically
     "end" -> Alignment.Bottom
     else -> Alignment.Top
 }
 
-private fun String.toContentAlignment(): Alignment = when (this) {
+internal fun String.toContentAlignment(): Alignment = when (this) {
     "center" -> Alignment.Center
     "end" -> Alignment.BottomEnd
     else -> Alignment.TopStart
 }
 
-private fun String.toHorizontalArrangement(): Arrangement.Horizontal = when (this) {
+internal fun String.toHorizontalArrangement(): Arrangement.Horizontal = when (this) {
     "center" -> Arrangement.Center
     "end" -> Arrangement.End
     "space_between" -> Arrangement.SpaceBetween
     else -> Arrangement.Start
 }
 
-private fun String.toVerticalArrangement(): Arrangement.Vertical = when (this) {
+internal fun String.toVerticalArrangement(): Arrangement.Vertical = when (this) {
     "center" -> Arrangement.Center
     "end" -> Arrangement.Bottom
     "space_between" -> Arrangement.SpaceBetween
     else -> Arrangement.Top
 }
 
-private fun Int.toShape(): Shape = if (this > 0) RoundedCornerShape(this.dp) else RectangleShape
+internal fun Int.toShape(): Shape = if (this > 0) RoundedCornerShape(this.dp) else RectangleShape
 
 private fun ColumnScope.childColumnModifier(child: ResolvedStyle): Modifier = when (child.selfAlignment) {
     "center" -> Modifier.align(Alignment.CenterHorizontally)
@@ -503,20 +613,41 @@ private fun RenderTextField(
 ) {
     val placeholder = node.meta["placeholder"].orEmpty()
     val enabled = node.meta["enabled"] != "false"
-    var value by remember { mutableStateOf("") }
+    val externalValue = node.meta["value"]
+    val isControlled = externalValue != null
+    var internalValue by remember { mutableStateOf(externalValue.orEmpty()) }
+    val displayValue = if (isControlled) externalValue.orEmpty() else internalValue
     val onValueChange = node.handlers.onValueChange
+    val onSubmit = node.handlers.onSubmit
+    val onFocusChange = node.handlers.onFocusChange
 
     OutlinedTextField(
-        value = value,
+        value = displayValue,
         onValueChange = { v ->
-            value = v
+            if (!isControlled) internalValue = v
             onValueChange?.invoke(v)
         },
-        modifier = modifier,
+        modifier = if (onFocusChange != null) {
+            modifier.then(
+                Modifier.onFocusChanged { state -> onFocusChange(state.isFocused) }
+            )
+        } else {
+            modifier
+        },
         label = node.text?.takeIf { it.isNotBlank() }?.let { { Text(it) } },
         placeholder = placeholder.takeIf { it.isNotBlank() }?.let { { Text(it) } },
         enabled = enabled,
         shape = RoundedCornerShape(8.dp),
+        keyboardOptions = if (onSubmit != null) {
+            KeyboardOptions(imeAction = ImeAction.Done)
+        } else {
+            KeyboardOptions.Default
+        },
+        keyboardActions = if (onSubmit != null) {
+            KeyboardActions(onDone = { onSubmit() })
+        } else {
+            KeyboardActions.Default
+        },
     )
 }
 
@@ -710,8 +841,9 @@ private fun RenderLazyRow(
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-private fun Modifier.thenHandlers(handlers: FluxaHandlers): Modifier {
+internal fun Modifier.thenHandlers(handlers: FluxaHandlers, disabled: Boolean = false): Modifier {
     if (handlers.onClick == null && handlers.onLongClick == null) return this
+    if (disabled) return this
     return if (handlers.onLongClick != null) {
         this.combinedClickable(
             onClick = { handlers.onClick?.invoke() },
@@ -722,10 +854,22 @@ private fun Modifier.thenHandlers(handlers: FluxaHandlers): Modifier {
     }
 }
 
-private fun Modifier.thenSemantics(semantics: FluxaSemantics?): Modifier {
+internal fun Modifier.thenSemantics(semantics: FluxaSemantics?): Modifier {
     if (semantics == null) return this
     return this.semantics {
         semantics.contentDescription?.let { contentDescription = it }
         if (semantics.heading) heading()
+        semantics.role?.toComposeRole()?.let { role = it }
+    }.let { mod ->
+        if (semantics.disabled) mod.alpha(0.5f) else mod
     }
+}
+
+internal fun FluxaRole.toComposeRole(): androidx.compose.ui.semantics.Role? = when (this) {
+    FluxaRole.BUTTON -> androidx.compose.ui.semantics.Role.Button
+    FluxaRole.CHECKBOX -> androidx.compose.ui.semantics.Role.Checkbox
+    FluxaRole.SWITCH -> androidx.compose.ui.semantics.Role.Switch
+    FluxaRole.IMAGE -> androidx.compose.ui.semantics.Role.Image
+    FluxaRole.TAB -> androidx.compose.ui.semantics.Role.Tab
+    FluxaRole.HEADING -> null
 }

@@ -19,6 +19,9 @@ object FluxaStyles {
             opacity(0.92f)
         }
 
+        transition("background", FluxaDuration.NORMAL, FluxaEasing.EASE_IN_OUT)
+        transition("opacity", FluxaDuration.FAST, FluxaEasing.EASE_OUT)
+
         responsive(FluxaBreakpoint.EXPANDED) {
             padding(FluxaAxisScale.XL)
             gap(FluxaAxisScale.LG)
@@ -77,6 +80,8 @@ object FluxaStyles {
         variant(FluxaVariant.SELECTED) {
             background(theme.colors.warning)
         }
+
+        transition("background", FluxaDuration.NORMAL, FluxaEasing.EASE_IN_OUT)
     }
 
     fun adaptiveFeatureCard(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
@@ -92,6 +97,8 @@ object FluxaStyles {
         variant(FluxaVariant.EMPHASIS) {
             background(theme.colors.panelAccent)
         }
+
+        transition("background", FluxaDuration.NORMAL, FluxaEasing.EASE_IN_OUT)
 
         responsive(FluxaBreakpoint.MEDIUM) {
             padding(FluxaAxisScale.XL)
@@ -117,6 +124,9 @@ object FluxaStyles {
             background(theme.colors.panelAccent)
             opacity(0.92f)
         }
+
+        transition("background", FluxaDuration.NORMAL, FluxaEasing.EASE_IN_OUT)
+        transition("opacity", FluxaDuration.FAST, FluxaEasing.EASE_OUT)
 
         responsive(FluxaBreakpoint.EXPANDED) {
             padding(FluxaAxisScale.XL)
@@ -184,6 +194,8 @@ object FluxaStyles {
         variant(FluxaVariant.DISABLED) {
             opacity(0.4f)
         }
+
+        transition("opacity", FluxaDuration.FAST, FluxaEasing.EASE_OUT)
     }
 
     fun divider(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {
@@ -210,6 +222,9 @@ object FluxaStyles {
         variant(FluxaVariant.DISABLED) {
             opacity(0.4f)
         }
+
+        transition("background", FluxaDuration.NORMAL, FluxaEasing.EASE_IN_OUT)
+        transition("opacity", FluxaDuration.FAST, FluxaEasing.EASE_OUT)
     }
 
     fun imageCard(theme: FluxaThemeTokens = FluxaThemes.Aurora): FluxaStyle = style {

@@ -97,4 +97,87 @@ class FluxaStyleTest {
         assertTrue(spec.base.any { it.name == "width" && it.value == "full" })
         assertTrue(spec.base.any { it.name == "height" && it.value == "40" })
     }
+
+    @Test
+    fun `transition produces correct instruction`() {
+        val s = style {
+            transition("background", FluxaDuration.SLOW, FluxaEasing.EASE_OUT)
+        }
+        val spec = s.compile()
+        val instruction = spec.base.single { it.name == "transition" }
+        assertEquals("background|350|ease_out", instruction.value)
+    }
+
+    @Test
+    fun `animateOn produces correct instruction`() {
+        val s = style {
+            animateOn(FluxaVariant.PRESSED, FluxaDuration.FAST, FluxaEasing.SPRING)
+        }
+        val spec = s.compile()
+        val instruction = spec.base.single { it.name == "animateOn" }
+        assertEquals("pressed|100|spring", instruction.value)
+    }
+
+    @Test
+    fun `transition default values`() {
+        val s = style {
+            transition("opacity")
+        }
+        val spec = s.compile()
+        val instruction = spec.base.single { it.name == "transition" }
+        assertEquals("opacity|200|ease_in_out", instruction.value)
+    }
+
+    @Test
+    fun `multiple transitions coexist`() {
+        val s = style {
+            transition("background", FluxaDuration.NORMAL)
+            transition("opacity", FluxaDuration.FAST)
+            transition("foreground", FluxaDuration.SLOW)
+        }
+        val spec = s.compile()
+        val transitions = spec.base.filter { it.name == "transition" }
+        assertEquals(3, transitions.size)
+        assertTrue(transitions.any { it.value.startsWith("background|") })
+        assertTrue(transitions.any { it.value.startsWith("opacity|") })
+        assertTrue(transitions.any { it.value.startsWith("foreground|") })
+    }
+
+    @Test
+    fun `all FluxaDuration values have correct milliseconds`() {
+        assertEquals(0, FluxaDuration.INSTANT.ms)
+        assertEquals(100, FluxaDuration.FAST.ms)
+        assertEquals(200, FluxaDuration.NORMAL.ms)
+        assertEquals(350, FluxaDuration.SLOW.ms)
+        assertEquals(250, FluxaDuration.ENTER.ms)
+        assertEquals(200, FluxaDuration.EXIT.ms)
+    }
+
+    @Test
+    fun `all FluxaEasing values exist`() {
+        assertEquals(5, FluxaEasing.entries.size)
+        assertTrue(FluxaEasing.entries.map { it.name }.containsAll(
+            listOf("LINEAR", "EASE_IN", "EASE_OUT", "EASE_IN_OUT", "SPRING")
+        ))
+    }
+
+    @Test
+    fun `transition combined with variant style`() {
+        val s = style {
+            background("color.panel")
+            opacity(1.0f)
+            variant(FluxaVariant.PRESSED) {
+                background("color.accent")
+                opacity(0.8f)
+            }
+            transition("background", FluxaDuration.NORMAL)
+            transition("opacity", FluxaDuration.FAST)
+        }
+        val spec = s.compile()
+        assertTrue(spec.base.any { it.name == "background" })
+        assertTrue(spec.base.any { it.name == "opacity" })
+        assertTrue(spec.variants["pressed"]!!.any { it.name == "background" })
+        assertTrue(spec.variants["pressed"]!!.any { it.name == "opacity" })
+        assertEquals(2, spec.base.count { it.name == "transition" })
+    }
 }
